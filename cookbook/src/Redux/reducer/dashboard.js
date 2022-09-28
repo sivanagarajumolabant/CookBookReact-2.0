@@ -13,6 +13,7 @@ const initialState = {
   editPreviewdetails: {},
   ITEMlIST: [],
   DropDownValues: [],
+  ParentDropDownValues:[],
   admin: 0,
   lable: null,
   project_version: null,
@@ -22,25 +23,22 @@ const initialState = {
 };
 
 const dashboardReducer = (state = initialState, action) => {
-
   switch (action.type) {
     case "SELECTED_MENU":
       return {
         ...state,
-        menuitem: action.payload
+        menuitem: action.payload,
       };
     case "SELECTED_DROPDOWN":
       return {
         ...state,
-        headerValue: action.payload
+        headerValue: action.payload,
       };
     case "REALOAD_LIST":
       return {
         ...state,
-        updatedValue: action.payload
+        updatedValue: action.payload,
       };
-
-
 
     case "CREATE_FEATURE":
       return {
@@ -48,8 +46,7 @@ const dashboardReducer = (state = initialState, action) => {
         createFeature: true,
         details: action.payload.data,
         editpreview: false,
-        preview: false
-
+        preview: false,
       };
     case "PREVIEW_FEATURE":
       return {
@@ -57,8 +54,7 @@ const dashboardReducer = (state = initialState, action) => {
         preview: true,
         details: action.payload.data,
         editpreview: false,
-        createFeature: false
-
+        createFeature: false,
       };
     case "EDIT_PREVIEW_FEATURE":
       return {
@@ -66,22 +62,23 @@ const dashboardReducer = (state = initialState, action) => {
         editpreview: true,
         editPreviewdetails: action.payload.data,
         preview: false,
-        createFeature: false
-
+        createFeature: false,
       };
 
     case "CREATE_REMOVED":
       return {
         ...state,
         createFeature: action.payload,
-        details: {}
+        details: {},
       };
 
     case "SELECTED_ITEM":
       return {
         ...state,
-        ITEMlIST: action.payload
+        ITEMlIST: action.payload,
       };
+
+    
     case "DROP_DOWN_LIST":
       return {
         ...state,
@@ -90,48 +87,51 @@ const dashboardReducer = (state = initialState, action) => {
         // admin: action.payload[0].admin
       };
 
-
-
+    case "PARENT_DROP_DOWN_LIST":
+      return {
+        ...state,
+        ParentDropDownValues: action.payload,
+      };
 
     case "UPDATE_SELECTED_ITEM":
       return {
         ...state,
-        ITEMlIST: action.payload
+        ITEMlIST: action.payload,
       };
     case "DELETE_SELECTED_ITEM":
       return {
         ...state,
-        ITEMlIST: action.payload
+        ITEMlIST: action.payload,
       };
 
     case "ADMIN_USER":
       return {
         ...state,
-        admin: action.payload
+        admin: action.payload,
       };
     case "LABLE":
       return {
         ...state,
-        lable: action.payload
+        lable: action.payload,
       };
 
     case "PROJECT_VERSION":
       return {
         ...state,
-        project_version: action.payload
+        project_version: action.payload,
       };
 
     case "PROJECT_HEADER_VERSION":
       return {
         ...state,
         project_header_dropdown: action.payload,
-      }
+      };
 
     case "PROJECT_VERSION_RELOAD":
       return {
         ...state,
         project_header_reload: action.payload,
-      }
+      };
     // case "USERADMIN":
     //   return {
     //     ...state,

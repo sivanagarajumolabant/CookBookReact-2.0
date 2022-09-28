@@ -325,15 +325,17 @@ export default function ClippedDrawer({ children }) {
     lable,
     project_version,
     project_header_dropdown,
+    ParentDropDownValues,
   } = useSelector((state) => state.dashboardReducer);
-  console.log(ITEMlIST,' = itemli')
+  // console.log(DropDownValues," 1st")
+
   const [auth, setAuth] = React.useState(true);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const openview = Boolean(anchorEl);
   const [menuList, setmenuList] = React.useState([]);
-  const [dropdown, setdropdown] = React.useState({
-    name: "Oracle TO Postgres",
-  });
+  const [dropdown, setdropdown] = React.useState({});
+  const [dropDownList, setDropdownList] = useState([]);
+  const [parentdropDownList, setParentdropDownList] = useState([]);
   const [create_flag, setcreate_flag] = useState([]);
   const [create_check_flag, setcreate_check_flag] = useState(0);
 
@@ -350,31 +352,51 @@ export default function ClippedDrawer({ children }) {
     history.push("/dashboard");
   }, []);
 
-  
+  React.useEffect(() => {
+    let conf = {
+      headers: {
+        Authorization: "Bearer " + config.ACCESS_TOKEN(),
+      },
+    };
+    axios.get(`${config.API_BASE_URL()}/api/migration_names_list/`, conf).then(
+      (res) => {
+        setDropdownList(res.data);
+        dispatch(Menuaction.getdropdownlist(res.data));
+        if (res.data.length > 0) {
+        }
+      },
+      (error) => {
+        setNotify({
+          isOpen: true,
+          message: "Something Went Wrong Please try Again",
+          type: "error",
+        });
+      }
+    );
+  }, []);
 
   React.useEffect(() => {
+    if (headerValue?.Migration_Name) {
+      console.log(headerValue, " head");
       let conf = {
         headers: {
           Authorization: "Bearer " + config.ACCESS_TOKEN(),
         },
       };
       let body = {
-        "Migration_Name":"Oracle To Postgres",
-        "Project_Version_Id":"1",
-        "User_Email":sessionStorage.getItem('uemail')
-
+        Migration_Name: headerValue?.Migration_Name,
+        Project_Version_Id: "1",
       };
       const form = new FormData();
       Object.keys(body).forEach((key) => {
         form.append(key, body[key]);
       });
-
       axios
-        .post(`${config.API_BASE_URL()}/api/menu_view_creation/`, form, conf)
+        .post(`${config.API_BASE_URL()}/api/parent_object_list/`, form, conf)
         .then(
           (res) => {
-            console.log(res)
-            setmenuList(res.data)
+            setParentdropDownList(res.data);
+            dispatch(Menuaction.getparentdropdownlist(res.data));
           },
           (error) => {
             setNotify({
@@ -384,7 +406,40 @@ export default function ClippedDrawer({ children }) {
             });
           }
         );
-    
+    }
+  }, [headerValue?.Migration_Name]);
+
+  React.useEffect(() => {
+    let conf = {
+      headers: {
+        Authorization: "Bearer " + config.ACCESS_TOKEN(),
+      },
+    };
+    let body = {
+      Migration_Name: "Oracle To Postgres",
+      Project_Version_Id: "1",
+      User_Email: sessionStorage.getItem("uemail"),
+    };
+    const form = new FormData();
+    Object.keys(body).forEach((key) => {
+      form.append(key, body[key]);
+    });
+
+    axios
+      .post(`${config.API_BASE_URL()}/api/menu_view_creation/`, form, conf)
+      .then(
+        (res) => {
+          console.log(res);
+          setmenuList(res.data);
+        },
+        (error) => {
+          setNotify({
+            isOpen: true,
+            message: "Something Went Wrong Please try Again",
+            type: "error",
+          });
+        }
+      );
   }, []);
 
   React.useEffect(() => {
@@ -422,15 +477,12 @@ export default function ClippedDrawer({ children }) {
     }
   }, [headerValue?.title]);
 
-  
-
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
   };
 
   const handleClose = () => {
     setAnchorEl(null);
-   
   };
 
   const handleroute = () => {
@@ -439,15 +491,12 @@ export default function ClippedDrawer({ children }) {
     history.push("/");
   };
 
-
   const onDownload1 = () => {
-   
     let conf = {
       headers: {
         Authorization: "Bearer " + config.ACCESS_TOKEN(),
       },
     };
-   
 
     axios
       .get(`${config.API_BASE_URL()}/api/templatedownload/`, {
@@ -462,13 +511,12 @@ export default function ClippedDrawer({ children }) {
       .catch((err) => {});
   };
   const onDownload2 = () => {
-    
     let conf = {
       headers: {
         Authorization: "Bearer " + config.ACCESS_TOKEN(),
       },
     };
-    
+
     axios
       .get(`${config.API_BASE_URL()}/api/pdfdownload/`, {
         responseType: "arraybuffer",
@@ -481,7 +529,6 @@ export default function ClippedDrawer({ children }) {
       })
       .catch((err) => {});
   };
-
 
   const handleAdminMenus = () => {
     history.push("/AdminAccesslist");
@@ -501,12 +548,14 @@ export default function ClippedDrawer({ children }) {
     history.push("/FeatureApprovals");
   };
 
-  const handleversion = () => {
-    
+  const handleversion = (v) => {
+    setdropdown(v);
+    dispatch(ActionMenu.dropdown(v));
+    history.push("/dashboard");
   };
   const handlefeature = (v) => {
     // console.log(v, ' =======')
-    dispatch(ActionMenu.selectedMenutlist(v))
+    dispatch(ActionMenu.selectedMenutlist(v));
     // console.log(v," ===========")
   };
 
@@ -520,17 +569,13 @@ export default function ClippedDrawer({ children }) {
 
     history.push("/dashboard");
   };
-
   
   return (
     <div className={classes.root}>
       <CssBaseline />
       <AppBar position="fixed" container className={classes.appBar}>
         <Toolbar container>
-          <Grid
-            container
-            spacing={2}
-          >
+          <Grid container spacing={2}>
             <Grid item xm={12} sm={12} md={3} lg={1}>
               <div>
                 <img
@@ -559,8 +604,10 @@ export default function ClippedDrawer({ children }) {
                     className={classes.inputRoottype}
                     options={DropDownValues}
                     groupBy={""}
-                    defaultValue={{ title: DropDownValues[0]?.title }}
-                    getOptionLabel={(option) => option.title}
+                    defaultValue={{
+                      Migration_Name: DropDownValues[0]?.Migration_Name,
+                    }}
+                    getOptionLabel={(option) => option.Migration_Name}
                     style={{ width: 300 }}
                     onChange={(e, v) => handleversion(v)}
                     renderInput={(params) => (
@@ -608,8 +655,6 @@ export default function ClippedDrawer({ children }) {
                     User Admin
                   </Button>
                   {"   "}
-
-               
                 </>
               )}
             </Grid>
@@ -641,8 +686,6 @@ export default function ClippedDrawer({ children }) {
                     Super Admin
                   </Button>
                   {"   "}
-
-              
                 </>
               )}
             </Grid>
@@ -680,7 +723,6 @@ export default function ClippedDrawer({ children }) {
                 />
               )}
             </Grid>
-          
 
             {auth && (
               <Grid
@@ -701,9 +743,7 @@ export default function ClippedDrawer({ children }) {
                   <div style={{ fontSize: 14, marginTop: 5 }}>
                     {sessionStorage.getItem("quser")}
                   </div>
-                
                 </IconButton>
-               
 
                 <Menu
                   id="menu-appbar"
@@ -724,7 +764,6 @@ export default function ClippedDrawer({ children }) {
                 </Menu>
               </Grid>
             )}
-
           </Grid>
         </Toolbar>
       </AppBar>
@@ -745,8 +784,6 @@ export default function ClippedDrawer({ children }) {
             <Toolbar />
 
             <div className={classes.drawerContainer}>
-             
-
               <Typography
                 variant="body2"
                 style={{
@@ -764,40 +801,38 @@ export default function ClippedDrawer({ children }) {
               </Typography>
               {/* <Divider /> */}
 
-                  <Typography
-                    variant="body2"
-                    style={{
-                      color: "white",
-                      marginBottom: 10,
-                      paddingTop: 10,
-                      paddingLeft: 50,
-                      marginTop: 0,
-                      justifyContent: "center",
-                      cursor: "pointer",
-                    }}
-                    onClick={handleAdminMenus}
-                  >
-                    Admin Approvals
-                  </Typography>
-                  {/* <Divider /> */}
-                  <Typography
-                    variant="body2"
-                    style={{
-                      color: "white",
-                      marginBottom: 10,
-                      paddingTop: 10,
-                      paddingLeft: 50,
-                      marginTop: 0,
-                      justifyContent: "center",
-                      cursor: "pointer",
-                    }}
-                    onClick={() => handlefeatureapprovals()}
-                  >
-                    Feature Approvals
-                  </Typography>
-                  {/* <Divider /> */}
-                
-              
+              <Typography
+                variant="body2"
+                style={{
+                  color: "white",
+                  marginBottom: 10,
+                  paddingTop: 10,
+                  paddingLeft: 50,
+                  marginTop: 0,
+                  justifyContent: "center",
+                  cursor: "pointer",
+                }}
+                onClick={handleAdminMenus}
+              >
+                Admin Approvals
+              </Typography>
+              {/* <Divider /> */}
+              <Typography
+                variant="body2"
+                style={{
+                  color: "white",
+                  marginBottom: 10,
+                  paddingTop: 10,
+                  paddingLeft: 50,
+                  marginTop: 0,
+                  justifyContent: "center",
+                  cursor: "pointer",
+                }}
+                onClick={() => handlefeatureapprovals()}
+              >
+                Feature Approvals
+              </Typography>
+              {/* <Divider /> */}
 
               <Typography
                 variant="body2"
@@ -816,7 +851,6 @@ export default function ClippedDrawer({ children }) {
               </Typography>
 
               <Box py={1}>
-               
                 <Grid container direction="column" spacing={0}>
                   <Grid item>
                     {menuList.length > 0 && (
@@ -900,9 +934,8 @@ export default function ClippedDrawer({ children }) {
           </Drawer>
         </Grid>
       </Grid>
-    
+
       <Notification notify={notify} setNotify={setNotify} />
-     
     </div>
   );
 }

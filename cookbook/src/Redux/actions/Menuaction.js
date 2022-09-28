@@ -23,6 +23,16 @@ const getdropdownlist = (value) => {
    }
 }
 
+const getparentdropdownlist = (value) => {
+   return dispatch => {
+
+      dispatch({
+         type: "PARENT_DROP_DOWN_LIST",
+         payload: value
+      })
+   }
+}
+
 const admin = (value) => {
    return dispatch => {
 
@@ -200,4 +210,4 @@ const project_reloadAction = (value) => {
 // }
 
 
-export default { ActionMenu, dropdown, reloadAction, CreateFeature, Createremoved, EditPreviewFeature, PreviewFeature, selectedMenutlist ,UpdateMenutlist, DeleteMenutlist, getdropdownlist,admin,lableselect,project_version,getproj_header_dropdownlist,project_reloadAction}
+export default { ActionMenu, dropdown, reloadAction, CreateFeature, Createremoved, EditPreviewFeature, PreviewFeature, selectedMenutlist ,UpdateMenutlist, DeleteMenutlist, getdropdownlist,admin,lableselect,project_version,getproj_header_dropdownlist,project_reloadAction,getparentdropdownlist}

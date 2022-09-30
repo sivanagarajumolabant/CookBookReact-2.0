@@ -25,6 +25,7 @@ import ResetPasword from '../Auth/ResetPassword';
 import { useHistory } from 'react-router-dom';
 import FeatureApprovals from '../Features/Modules/FeatureApprovals'
 import tree from '../Components/treeview3'
+import Rules from '../Features/Modules/Rules';
 
 
 
@@ -55,6 +56,7 @@ const Routing = () => {
                     <ProtectedRoute exact path="/PreviewCode" component={PreviewCode} />
                     <ProtectedRoute exact path="/EditFeature" component={EditFeature} />
                     <ProtectedRoute exact path="/accessreview" component={AccessReview} />
+                    <ProtectedRoute exact path="/rules" component={Rules} />
                     <ProtectedRoute exact path="/requestdata" component={RequestFeatureData} />
 
                     {/* <ProtectedRoute exact path="/edit/:id" component={EditFeature} /> */}

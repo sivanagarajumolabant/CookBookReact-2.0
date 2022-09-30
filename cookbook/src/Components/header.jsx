@@ -363,6 +363,7 @@ export default function ClippedDrawer({ children }) {
         setDropdownList(res.data);
         dispatch(Menuaction.getdropdownlist(res.data));
         if (res.data.length > 0) {
+          getmenus(res.data[0].Migration_Name);
         }
       },
       (error) => {
@@ -409,17 +410,55 @@ export default function ClippedDrawer({ children }) {
     }
   }, [headerValue?.Migration_Name]);
 
-  React.useEffect(() => {
+  // React.useEffect(() => {
+  //   if (headerValue?.Migration_Name) {
+  //     console.log(headerValue, " header val");
+  //     let conf = {
+  //       headers: {
+  //         Authorization: "Bearer " + config.ACCESS_TOKEN(),
+  //       },
+  //     };
+  //     let body = {
+  //       Migration_Name: headerValue?.Migration_Name,
+  //       Project_Version_Id: "1",
+  //       User_Email: sessionStorage.getItem("uemail"),
+  //     };
+  //     const form = new FormData();
+  //     Object.keys(body).forEach((key) => {
+  //       form.append(key, body[key]);
+  //     });
+
+  //     axios
+  //       .post(`${config.API_BASE_URL()}/api/menu_view_creation/`, form, conf)
+  //       .then(
+  //         (res) => {
+  //           console.log(res);
+  //           setmenuList(res.data);
+  //         },
+  //         (error) => {
+  //           setNotify({
+  //             isOpen: true,
+  //             message: "Something Went Wrong Please try Again",
+  //             type: "error",
+  //           });
+  //         }
+  //       );
+  //   }
+  // }, [headerValue?.Migration_Name]);
+
+  const getmenus = async (value) => {
     let conf = {
       headers: {
         Authorization: "Bearer " + config.ACCESS_TOKEN(),
       },
     };
+
     let body = {
-      Migration_Name: "Oracle To Postgres",
+      Migration_Name: value,
       Project_Version_Id: "1",
       User_Email: sessionStorage.getItem("uemail"),
     };
+
     const form = new FormData();
     Object.keys(body).forEach((key) => {
       form.append(key, body[key]);
@@ -429,18 +468,42 @@ export default function ClippedDrawer({ children }) {
       .post(`${config.API_BASE_URL()}/api/menu_view_creation/`, form, conf)
       .then(
         (res) => {
-          console.log(res);
-          setmenuList(res.data);
+          if (res.data.length > 0) {
+            // const res = await axios.get(`${config.API_BASE_URL()}/api/miglevelobjects/${value}`, conf);
+            setmenuList(res.data);
+            dispatch(Menuaction.lableselect(res.data[0].Object_Type));
+            dispatch(ActionMenu.selectedMenutlist());
+            dispatch(Menuaction.reloadAction(false));
+            // dispatch(Menuaction.admin(res.data[0]?.Admin_Flag))
+          } else if (res.data.length === 0) {
+            setmenuList([]);
+            dispatch(ActionMenu.selectedMenutlist());
+            dispatch(Menuaction.reloadAction(false));
+            // dispatch(Menuaction.admin(0))
+          }
         },
         (error) => {
-          setNotify({
-            isOpen: true,
-            message: "Something Went Wrong Please try Again",
-            type: "error",
-          });
+          setmenuList([]);
+          dispatch(ActionMenu.selectedMenutlist());
+          dispatch(Menuaction.reloadAction(false));
+          // dispatch(Menuaction.admin(0))
         }
       );
-  }, []);
+  };
+
+  React.useEffect(() => {
+    if (headerValue) {
+      if (Object.keys(headerValue).length > 0) {
+        getmenus(headerValue?.Migration_Name);
+      }
+    }
+  }, [headerValue, project_version]);
+
+  React.useEffect(() => {
+    if (updatedValue) {
+      getmenus(headerValue?.Migration_Name);
+    }
+  }, [updatedValue, project_version]);
 
   React.useEffect(() => {
     if (headerValue?.title) {
@@ -549,11 +612,17 @@ export default function ClippedDrawer({ children }) {
   };
 
   const handleversion = (v) => {
+    getmenus(v?.Migration_Name);
+
     setdropdown(v);
     dispatch(ActionMenu.dropdown(v));
+    dispatch(Menuaction.lableselect(v?.Migration_Name))
+    // dispatch(Menuaction.reloadAction(true))
+    console.log('refresh')
     history.push("/dashboard");
   };
   const handlefeature = (v) => {
+    
     // console.log(v, ' =======')
     dispatch(ActionMenu.selectedMenutlist(v));
     // console.log(v," ===========")
@@ -569,7 +638,7 @@ export default function ClippedDrawer({ children }) {
 
     history.push("/dashboard");
   };
-  
+// console.log(ITEMlIST,'menu')
   return (
     <div className={classes.root}>
       <CssBaseline />
@@ -864,6 +933,7 @@ export default function ClippedDrawer({ children }) {
                         getOptionLabel={(option) => option.Object_Type}
                         style={{ width: 230, height: 50 }}
                         onChange={(e, v) => handlefeature(v)}
+                        blurOnSelect={true}
                         renderInput={(params) => (
                           <TextField
                             {...params}
@@ -873,6 +943,7 @@ export default function ClippedDrawer({ children }) {
                               className: classes.floatingLabelFocusStyle,
                               shrink: true,
                             }}
+                            
                           />
                         )}
                       />

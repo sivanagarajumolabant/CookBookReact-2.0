@@ -152,8 +152,7 @@ const useStyles = makeStyles({
   },
 });
 
-const RenderTree = (nodes)=> {
-
+const RenderTree = (nodes, count) => {
   const history = useHistory();
   return (
     <TreeItem
@@ -174,12 +173,10 @@ const RenderTree = (nodes)=> {
             {nodes?.Object_Type}
           </Typography>
 
-         
-
           <>
             <AddIcon
               color="inherit"
-              style={{ color: "#0BCD19" ,marginRight:10}}
+              style={{ color: "#0BCD19", marginRight: 10 }}
               // onClick={
               //   () =>
               //     history.push({
@@ -190,12 +187,25 @@ const RenderTree = (nodes)=> {
               //     })
               //   }
             />
+            {count == 1 && (
+              <AddIcon
+                color="inherit"
+                style={{ color: "#0BCD19", marginRight: 10 }}
+                // onClick={
+                //   () =>
+                //     history.push({
+                //       pathname: "/Create",
+                //       state: {
+                //         data: { ...data, type: props.dropdown?.name },
+                //       },
+                //     })
+                //   }
+              />
+            )}
           </>
         </div>
       }
-     
     >
-      
       {nodes?.Sub_Menu.map((fn, key) => {
         return (
           <StyledTreeItem
@@ -207,12 +217,13 @@ const RenderTree = (nodes)=> {
           ></StyledTreeItem>
         );
       })}
+      
       {Array?.isArray(nodes?.Sub_Objects)
-        ? nodes?.Sub_Objects.map((node) => RenderTree(node))
+        ? nodes?.Sub_Objects.map((node) => RenderTree(node, 0))
         : null}
     </TreeItem>
   );
-}
+};
 
 export default function GmailTreeView({
   menuList,
@@ -232,7 +243,8 @@ export default function GmailTreeView({
 
     // dispatch(ActionMenu.ActionObjectMenu(value));
   };
-
+  let count = 1;
+  console.log(menuList, "tree view")
   return (
     <TreeView
       className={classes.root}
@@ -242,8 +254,17 @@ export default function GmailTreeView({
       defaultExpandIcon={<ArrowRightIcon />}
       defaultEndIcon={<div style={{ width: 24 }} />}
       sx={{ height: 264, flexGrow: 1, maxWidth: 400, overflowY: "auto" }}
-    >
-      {menuList?.length >= 1 && <>{RenderTree(menuList[0])}</>}
+    > 
+    
+      {menuList?.length >= 1 && 
+      <>
+      {menuList[0]!==undefined && <>
+        {RenderTree(menuList[0], count)}
+      </>}
+     
+      </>
+      
+      }
     </TreeView>
   );
 }

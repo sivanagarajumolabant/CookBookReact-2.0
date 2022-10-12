@@ -152,79 +152,6 @@ const useStyles = makeStyles({
   },
 });
 
-const RenderTree = (nodes, count) => {
-  const history = useHistory();
-  return (
-    <TreeItem
-      key={nodes?.Object_Type}
-      nodeId={nodes?.Object_Type}
-      label={
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            padding: 5,
-          }}
-        >
-          <Typography
-            variant="body2"
-            style={{ color: "white", fontWeight: "inherit", flexGrow: 1 }}
-          >
-            {nodes?.Object_Type}
-          </Typography>
-
-          <>
-            <AddIcon
-              color="inherit"
-              style={{ color: "#0BCD19", marginRight: 10 }}
-              // onClick={
-              //   () =>
-              //     history.push({
-              //       pathname: "/Create",
-              //       state: {
-              //         data: { ...data, type: props.dropdown?.name },
-              //       },
-              //     })
-              //   }
-            />
-            {count == 1 && (
-              <AddIcon
-                color="inherit"
-                style={{ color: "#0BCD19", marginRight: 10 }}
-                // onClick={
-                //   () =>
-                //     history.push({
-                //       pathname: "/Create",
-                //       state: {
-                //         data: { ...data, type: props.dropdown?.name },
-                //       },
-                //     })
-                //   }
-              />
-            )}
-          </>
-        </div>
-      }
-    >
-      {nodes?.Sub_Menu.map((fn, key) => {
-        return (
-          <StyledTreeItem
-            key={fn?.Feature_Name}
-            nodeId={key + fn?.Feature_Name}
-            labelText={fn?.Feature_Name}
-            labelIcon={ViewModuleIcon}
-            style={{ color: "white" }}
-          ></StyledTreeItem>
-        );
-      })}
-      
-      {Array?.isArray(nodes?.Sub_Objects)
-        ? nodes?.Sub_Objects.map((node) => RenderTree(node, 0))
-        : null}
-    </TreeItem>
-  );
-};
-
 export default function GmailTreeView({
   menuList,
   dropdown,
@@ -237,14 +164,90 @@ export default function GmailTreeView({
   const classes = useStyles();
   const dispatch = useDispatch();
   let history = useHistory();
-  const MenuSelected = (value, lable) => {
-    dispatch(ActionMenu.ActionMenu(value));
+  const MenuSelected = (fname, lable,objid) => {
+    dispatch(ActionMenu.ActionMenu(fname));
     dispatch(ActionMenu.lableselect(lable));
+    dispatch(ActionMenu.object_id_get(objid));
 
     // dispatch(ActionMenu.ActionObjectMenu(value));
   };
+
+  const RenderTree = (nodes, count) => {
+    const history = useHistory();
+    let obj = nodes?.Object_Type;
+    let obj_id = nodes?.Object_Id;
+    return (
+      <TreeItem
+        key={nodes?.Object_Id}
+        nodeId={nodes?.Object_Id}
+        label={
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              padding: 5,
+            }}
+          >
+            <Typography
+              variant="body2"
+              style={{ color: "white", fontWeight: "inherit", flexGrow: 1 }}
+            >
+              {nodes?.Object_Type}
+            </Typography>
+
+            <>
+              <AddIcon
+                color="inherit"
+                style={{ color: "#0BCD19", marginRight: 10 }}
+                onClick={() =>
+                  history.push({
+                    pathname: `/create`,
+                    data: { obj, obj_id },
+                  })
+                }
+              />
+              {/* {count == 1 && ( */}
+              <AddIcon
+                color="inherit"
+                style={{ color: "yellow", marginRight: 10 }}
+                onClick={() =>
+                  // history.push('/rules',)
+                  history.push({
+                    pathname: `/rules`,
+                    data: { obj },
+                  })
+                }
+              />
+              {/* )} */}
+            </>
+          </div>
+        }
+      >
+        {nodes?.Sub_Menu.map((fn, key) => {
+          return (
+            <StyledTreeItem
+              key={fn?.Feature_Id}
+              nodeId={key + fn?.Feature_Id}
+              labelText={fn?.Feature_Name}
+              labelIcon={ViewModuleIcon}
+              style={{ color: "white" }}
+              onClick={() => {
+                MenuSelected(fn?.Feature_Name, nodes?.Object_Type, nodes?.Object_Id);
+                history.push("/PreviewCode");
+              }}
+            ></StyledTreeItem>
+          );
+        })}
+
+        {Array?.isArray(nodes?.Sub_Objects)
+          ? nodes?.Sub_Objects.map((node) => RenderTree(node, 0))
+          : null}
+      </TreeItem>
+    );
+  };
+
   let count = 1;
-  console.log(menuList, "tree view")
+
   return (
     <TreeView
       className={classes.root}
@@ -254,17 +257,12 @@ export default function GmailTreeView({
       defaultExpandIcon={<ArrowRightIcon />}
       defaultEndIcon={<div style={{ width: 24 }} />}
       sx={{ height: 264, flexGrow: 1, maxWidth: 400, overflowY: "auto" }}
-    > 
-    
-      {menuList?.length >= 1 && 
-      <>
-      {menuList[0]!==undefined && <>
-        {RenderTree(menuList[0], count)}
-      </>}
-     
-      </>
-      
-      }
+    >
+      {menuList?.length >= 1 && (
+        <>
+          {menuList[0] !== undefined && <>{RenderTree(menuList[0], count)}</>}
+        </>
+      )}
     </TreeView>
   );
 }

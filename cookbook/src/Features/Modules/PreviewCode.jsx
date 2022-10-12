@@ -169,7 +169,7 @@ export default function PreviewCode(props) {
   const [source_att, setSource_att] = useState([]);
   const [target_att, setTarget_att] = useState([]);
   const [conv_att, setConv_att] = useState([]);
-  const { menuitem } = useSelector((state) => state.dashboardReducer);
+  const { menuitem,objectid } = useSelector((state) => state.dashboardReducer);
   const [issattdata, setIssattdata] = useState(false);
   const [iscattdata, setIscattdata] = useState(false);
   const [istattdata, setIstattdata] = useState(false);
@@ -181,7 +181,7 @@ export default function PreviewCode(props) {
   const [istaattdata, setIstaattdata] = useState(false);
   const [istettdata, setIstettdata] = useState(false);
   const { details, createFeature, preview, editpreview, editPreviewdetails, headerValue, lable, project_version } = useSelector(state => state.dashboardReducer);
-  const [migtypeid, setMigtypeid] = useState(headerValue?.title)
+  const [migtypeid, setMigtypeid] = useState(headerValue?.Migration_Name)
   const [objtype, setObjtype] = useState()
   const [max_flag_ver, setMax_flag_ver] = useState()
   const [fnnames, setFnnames] = useState([])
@@ -209,7 +209,7 @@ export default function PreviewCode(props) {
       };
 
       let body = {
-        "Migration_Type": headerValue?.title,
+        "Migration_Type": headerValue?.Migration_Name,
         "Object_Type": lable,
         'Feature_Name': menuitem,
         'Project_Version_Id': project_version
@@ -226,7 +226,7 @@ export default function PreviewCode(props) {
             setFversionslist(res.data)
             if (res.data.length > 0) {
               Object.keys(res.data).forEach((key) => {
-                setVersionSelect(String(res.data[key]?.title))
+                setVersionSelect(String(res.data[key]?.Migration_Name))
               });
               // setVersionSelect(String(res.data.length))
             }
@@ -257,10 +257,7 @@ export default function PreviewCode(props) {
       };
 
       let body = {
-        'User_Email': sessionStorage.getItem('uemail'),
-        "Migration_Type": headerValue?.title,
-        "Object_Type": lable,
-        "Project_Version_Id": project_version
+        Object_Id:objectid
       }
       const form = new FormData();
       Object.keys(body).forEach((key) => {
@@ -268,27 +265,22 @@ export default function PreviewCode(props) {
       });
 
       axios
-        .post(`${config.API_BASE_URL()}/api/fdetail/${menuitem || null}`, form, conf)
+        .post(`${config.API_BASE_URL()}/api/feature_detail/${menuitem || null}/`, form, conf)
         .then(
           (res) => {
             console.log(res.data);
-            Object.keys(res.data).forEach((val) => {
-              if (res.data[val]?.Max_Flag === 1) {
-                setDetaildata(res.data[val]?.serializer);
-                setFnname(res.data[val]?.serializer?.Feature_Name)
-                setObjtype(res.data[val]?.serializer?.Object_Type)
+            // Object.keys(res.data).forEach((val) => {
+              // if (res.data[val]?.Max_Flag === 1) {
+                setDetaildata(res.data[0]);
+                setFnname(res.data[0].Feature_Name)
+                // setObjtype(res.data[val]?.serializer?.Object_Type)
                 setIsdata(true);
-                setCheckIsEdit(res.data[val]?.edit)
-                setLatest_flag(res.data[val]?.Latest_Flag)
-                setMax_flag_ver(res.data[val]?.Max_Project_Flag)
-                // Max_Project_Flag
-                // setVersionSelect(res.data[val]?.Feature_Version_Id)
-              }
-              // else{
-              //   setCheckIsEdit(0)
-              //   setLatest_flag(0)
+                // setCheckIsEdit(res.data[0]?.edit)
+                // setLatest_flag(res.data[0]?.Latest_Flag)
+                // setMax_flag_ver(res.data[0]?.Max_Project_Flag)
+                
               // }
-            })
+            // })
 
           },
           (error) => {
@@ -525,7 +517,7 @@ export default function PreviewCode(props) {
   const handleRequestAccess = () => {
     let body = {
       "Object_Type": objtype,
-      "Migration_TypeId": headerValue?.title,
+      "Migration_TypeId": headerValue?.Migration_Name,
       "User_Email": sessionStorage.getItem('uemail'),
       "Feature_Name": fnname,
       "Approval_Status": 'Pending',
@@ -578,10 +570,7 @@ export default function PreviewCode(props) {
     };
 
     let body = {
-      'User_Email': sessionStorage.getItem('uemail'),
-      "Migration_Type": headerValue?.title,
-      "Object_Type": lable,
-      "Project_Version_Id": project_version
+      Object_Id:objectid
     }
     const form = new FormData();
     Object.keys(body).forEach((key) => {
@@ -589,7 +578,7 @@ export default function PreviewCode(props) {
     });
 
     axios
-      .post(`${config.API_BASE_URL()}/api/fdetail/${menuitem}`, form, conf)
+      .post(`${config.API_BASE_URL()}/api/feature_detail/${menuitem}/`, form, conf)
       .then(
         (res) => {
           console.log(res.data);
@@ -668,7 +657,7 @@ export default function PreviewCode(props) {
                 groupBy={""}
                 defaultValue={{ title: String(versionSelect) }}
                 value={versionSelect}
-                getOptionLabel={(option) => option?.title}
+                getOptionLabel={(option) => option?.Migration_Name}
                 style={{ width: 110 }}
                 onChange={(e, v) => handleFeatureversion(v?.code)}
                 renderInput={(params) => (

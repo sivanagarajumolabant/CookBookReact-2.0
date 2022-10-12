@@ -1,4 +1,14 @@
 import { Box, Grid, TextField, Typography, styled } from "@material-ui/core";
+import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
+import Checkbox from "@material-ui/core/Checkbox";
+// import React from 'react';
+// import clsx from "clsx";
+import PropTypes from "prop-types";
+import ActionMenu from "../../Redux/actions/Menuaction";
+import ArrowRightIcon from "@material-ui/icons/ArrowRight";
+import ViewModuleIcon from "@material-ui/icons/ViewModule";
+import TreeView from "@material-ui/lab/TreeView";
+import TreeItem from "@material-ui/lab/TreeItem";
 import { Autocomplete } from "@material-ui/lab";
 import ConfirmDialog from "../../Features/Notifications/ConfirmDialog";
 import Button from "@material-ui/core/Button";
@@ -136,7 +146,7 @@ const useStyles = makeStyles((theme) => ({
     border: "none",
     borderRadius: 15,
     width: 450,
-    height: 350,
+    height: 400,
     backgroundColor: "white",
     position: "absolute",
     top: 0,
@@ -186,8 +196,13 @@ export default function SuperadminFunction() {
   const [parentdropDownList, setParentdropDownList] = useState([]);
   const [modelMigtype_ObjectCreation, setModelMigtype_ObjectCreation] =
     useState();
-  const [Objtype_create, setObjtype_create] = useState();
-  const [updateParentObjects, setUpadteParentObjects] =useState(false)
+  // const [Objtype_create, setObjtype_create] = useState();
+  const [list_objects, setList_of_objects] = useState([]);
+  const [selectedItem, setSelectedItem] = useState({});
+  const [path, setPath] = useState();
+  const [checkbox, setCheckbox] = useState(false);
+  const [subobjType, setSubobjtype] = useState();
+
   const {
     details,
     createFeature,
@@ -252,7 +267,7 @@ export default function SuperadminFunction() {
     };
     let body = {
       Migration_Name: Migration_Name,
-      Project_Version_Id: "1",
+      Project_Version_Id: project_version,
     };
     const form = new FormData();
     Object.keys(body).forEach((key) => {
@@ -324,19 +339,33 @@ export default function SuperadminFunction() {
     setUpdateDropDownList(false);
   };
 
-  const handleObjectypeCreate = (
-    modelMigtype_ObjectCreation,
-    Objtype_create
-  ) => {
+  const handleObjectypeCreate = (modelMigtype_ObjectCreation) => {
+    let body;
+    let obj;
+    if (checkbox === true) {
+      if (subobjType || subobjType !== "") {
+        obj = path + "/" + subobjType;
+      } else {
+        obj = path;
+      }
+      body = {
+        Project_Version_Id: project_version,
+        Migration_Name: modelMigtype_ObjectCreation,
+        Object_Type_Str: obj,
+      };
+    } else {
+      body = {
+        Project_Version_Id: project_version,
+        Migration_Name: modelMigtype_ObjectCreation,
+        Object_Type_Str: path,
+      };
+    }
+    // console.log(body,' body')
+
     let conf = {
       headers: {
         Authorization: "Bearer " + config.ACCESS_TOKEN(),
       },
-    };
-    let body = {
-      Project_Version_Id: "1",
-      Migration_Name: modelMigtype_ObjectCreation,
-      Object_Type_Str: Objtype_create,
     };
 
     const form = new FormData();
@@ -360,10 +389,12 @@ export default function SuperadminFunction() {
               message: "Object Type created",
               type: "success",
             });
-            handlePearentobjecttypes(modelMigtype_ObjectCreation)
+            // handlePearentobjecttypes(modelMigtype_ObjectCreation);
+            handleGetObjecttypesList(modelMigtype_ObjectCreation);
+            dispatch(Menuaction.reloadAction(true));
           }
 
-          setOpen(false);
+          // setOpen(false);
         },
         (error) => {
           setNotify({
@@ -375,8 +406,105 @@ export default function SuperadminFunction() {
       );
   };
 
+  const handleGetObjecttypesList = (migtype) => {
+    let conf = {
+      headers: {
+        Authorization: "Bearer " + config.ACCESS_TOKEN(),
+      },
+    };
+    // console.log(project_version, " project versin");
+    let body = {
+      Project_Version_Id: project_version,
+      Migration_Name: migtype,
+    };
+
+    const form = new FormData();
+    Object.keys(body).forEach((key) => {
+      form.append(key, body[key]);
+    });
+
+    axios
+      .post(`${config.API_BASE_URL()}/api/object_types_format/`, form, conf)
+      .then(
+        (res) => {
+          setList_of_objects(res.data);
+        },
+        (error) => {
+          setNotify({
+            isOpen: true,
+            message: "Something went wrong Please try Again",
+            type: "error",
+          });
+        }
+      );
+  };
+
+  const RenderTree = (nodes) => {
+    // console.log("selection path ", );
+    // const history = useHistory();
+    return (
+      <TreeItem
+        key={nodes?.Object_Type}
+        nodeId={nodes?.Object_Type}
+        onLabelClick={() => handleTreeItemClick(nodes?.Object_Type)}
+        label={
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              padding: 5,
+            }}
+          >
+            <Typography
+              variant="body2"
+              style={{ color: "black", fontWeight: "inherit", flexGrow: 1 }}
+            >
+              {nodes?.Object_Type}
+            </Typography>
+          </div>
+        }
+      >
+        {Array?.isArray(nodes?.Sub_Objects)
+          ? nodes?.Sub_Objects.map((node) => RenderTree(node))
+          : null}
+      </TreeItem>
+    );
+  };
+  const handleTreeStructureselected = (v) => {
+    setSelectedItem(v);
+  };
+  const handleTreeItemClick = (obj) => {
+    if (path) {
+      let mod_str = path.split("/");
+      let identified_str = mod_str.pop();
+      // console.log(identified_str)
+      // console.log(identified_str, '===', obj)
+      if (identified_str === obj) {
+        setPath(path);
+      } else {
+        setPath(path + "/" + obj);
+      }
+    } else {
+      setPath(obj);
+    }
+  };
+
+  const handle_sub_obj = (v) => {
+    setSubobjtype(v);
+  };
+  const clearPath = () => {
+    console.log("clear");
+    setPath("");
+    setSubobjtype("");
+  };
+
+  const handleChangeCheckBox = (event) => {
+    setCheckbox(event.target.checked);
+  };
+  // console.log(path,' path')
+
   return (
-    <Box style={{ width: "100%" }}>
+    <Box style={{ width: "92%" }}>
       <Box py={1} px={1}>
         <Grid container direction="row" justifyContent="center">
           <Grid item>
@@ -388,12 +516,7 @@ export default function SuperadminFunction() {
       </Box>
 
       <Box py={2} px={2}>
-        <Grid
-          container
-          direction="row"
-          style={{ marginLeft: 80, position: "relative" }}
-          spacing={2}
-        >
+        <Grid container direction="row" justifyContent="center" spacing={2}>
           <Grid item xs={4}>
             <StyledAutocomplete
               size="small"
@@ -404,7 +527,11 @@ export default function SuperadminFunction() {
               defaultValue={{ Migration_Name: DropDownList[0]?.Migration_Name }}
               getOptionLabel={(option) => option.Migration_Name}
               style={{ width: 300, marginLeft: 100 }}
-              onChange={(e, v) => handlePearentobjecttypes(v?.Migration_Name)}
+              onChange={(e, v) => {
+                // handlePearentobjecttypes(v?.Migration_Name);
+                handleGetObjecttypesList(v?.Migration_Name);
+                setModelMigtype_ObjectCreation(v?.Migration_Name);
+              }}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -517,114 +644,23 @@ export default function SuperadminFunction() {
               </div>
             </Container>
           </Modal>
-          <Grid>
-            <Button
-              variant="contained"
-              // disabled={!selecetd}
-              color="primary"
-              component="span"
-              style={{ marginTop: 9, marginLeft: 70 }}
-              // onClick={() => { handlecreateadmin() }}
-            >
-              {" "}
-              Create Admin
-            </Button>
-          </Grid>
-          <Grid item xs={4}>
-            <StyledAutocomplete
-              size="small"
-              id="grouped-demo"
-              className={classes.inputRoottype}
-              options={parentdropDownList}
-              groupBy={""}
-              defaultValue={{
-                Parent_Object: parentdropDownList[0]?.Parent_Object,
-              }}
-              getOptionLabel={(option) => option.Parent_Object}
-              // onChange={(e, v) => handleobjecttype(v)}
-              style={{ width: 300, marginLeft: 100 }}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="ObjectType"
-                  variant="outlined"
-                  InputLabelProps={{
-                    className: classes.floatingLabelFocusStyle,
-                    shrink: true,
-                  }}
-                />
-              )}
-            />
-          </Grid>
-          <Grid item xs={1} style={{ marginLeft: 100 }}>
-            <Avatar className={classes.avatar} onClick={() => setOpen(true)}>
-              <AddIcon style={{ color: "green" }} />
-            </Avatar>
-          </Grid>
-        </Grid>
-        <Snackbar
-          open={openAlert}
-          autoHideDuration={4000}
-          onClose={handleClose}
-          anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-        ></Snackbar>
-        <Modal open={open}>
-          <Container
-            className={classes.container2}
-            style={{ marginBottom: 100 }}
-          >
-            <Typography
-              gutterBottom
-              align="center"
-              variant="h6"
-              component="h2"
-              className={classes.Object_Type}
-              style={{ marginBottom: "40px", marginTop: "20px" }}
-            >
-              Create Parent Object Type
-            </Typography>
-            {/* <form className={classes.form} autoComplete="off"> */}
-
-            <Grid item xs={4}>
+          {checkbox ? (
+            <Grid item xs={5}>
               <StyledAutocomplete
                 size="small"
                 id="grouped-demo"
                 className={classes.inputRoottype}
-                options={DropDownList}
+                options={list_objects}
                 groupBy={""}
-                // defaultValue={{ Migration_Name: DropDownList[0]?.Migration_Name }}
-                getOptionLabel={(option) => option.Migration_Name}
-                style={{ width: 400, marginBottom: "20px", height: "60px" }}
+                // defaultValue={{
+                //   Object_Type: list_objects[0]?.Object_Type,
+                // }}
+                getOptionLabel={(option) => option.Object_Type}
                 onChange={(e, v) => {
-                  setModelMigtype_ObjectCreation(v?.Migration_Name);
-                  // handlePearentobjecttypes(v?.Migration_Name)
+                  handleTreeStructureselected(v);
+                  clearPath();
                 }}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Migration type"
-                    variant="outlined"
-                    InputLabelProps={{
-                      className: classes.floatingLabelFocusStyle,
-                      shrink: true,
-                    }}
-                  />
-                )}
-              />
-            </Grid>
-            {/* <div className={classes.item}>
-              <StyledAutocomplete
-                size="small"
-                id="grouped-demo"
-                className={classes.inputRoottype}
-                options={parentdropDownList}
-                groupBy={""}
-                defaultValue={{
-                  Parent_Object: parentdropDownList[0]?.Parent_Object,
-                }}
-                getOptionLabel={(option) => option.Parent_Object}
-                // onChange={(e, v) => handleobjecttype(v)}
-                style={{ width: 400, marginBottom: "20px", height: "60px" }}
+                style={{ width: 300 }}
                 renderInput={(params) => (
                   <TextField
                     {...params}
@@ -637,60 +673,264 @@ export default function SuperadminFunction() {
                   />
                 )}
               />
-            </div> */}
-            <div className={classes.item}>
-              <TextField
-                id="outlined-multiline-static"
-                label="New Parent Object Type"
-                style={{ width: 400, marginBottom: "20px" }}
-                multiline
-                rows={1}
-                // value ={row.Keywords}
-                onChange={(e) => setObjtype_create(e.target.value)}
-                name="Keywords"
-                // defaultValue={edithandle.Keywords}
-                // helperText={featurenamemsg}
-                // value={edithandle.Keywords}
-                className={classes.textField}
-                // helperText="Some important text"
-                variant="outlined"
-                InputLabelProps={{
-                  shrink: true,
-                }}
-              />
-            </div>
+            </Grid>
+          ) : (
+            <></>
+          )}
+        </Grid>
+      </Box>
 
-            <div className={classes.item}>
+      <Box py={3} px={3}>
+        {checkbox ? (
+          <Grid container direction="row" justifyContent="center">
+            <TreeView
+              className={classes.root}
+              defaultExpanded={["3"]}
+              // expanded={true}
+              defaultCollapseIcon={<ArrowDropDownIcon />}
+              defaultExpandIcon={<ArrowRightIcon />}
+              defaultEndIcon={<div style={{ width: 24 }} />}
+              sx={{
+                height: 264,
+                flexGrow: 1,
+                maxWidth: 400,
+                overflowY: "auto",
+              }}
+            >
+              <>{RenderTree(selectedItem)}</>
+            </TreeView>
+          </Grid>
+        ) : null}
+        <Box py={4} px={4}>
+          <Grid
+            container
+            direction="row"
+            justifyContent="center"
+            style={{ position: "relative" }}
+            spacing={2}
+          >
+            <Grid spacing={3}>
+              <Checkbox
+                checked={checkbox}
+                onChange={handleChangeCheckBox}
+                inputProps={{ "aria-label": "primary checkbox" }}
+                style={{ marginTop: 8 }}
+              />
+              {checkbox ? (
+                <>
+                  <TextField
+                    id="outlined-multiline-static"
+                    label="Selected Path"
+                    size="small"
+                    style={{ width: 350, marginTop: 8 }}
+                    multiline
+                    rows={2}
+                    // onChange={(e) => handlePath()}
+                    name="Selected Path"
+                    value={path}
+                    className={classes.textField}
+                    variant="outlined"
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    disabled
+                  />{" "}
+                  <TextField
+                    id="outlined-multiline-static"
+                    label="Sub Object Type"
+                    size="small"
+                    style={{ width: 350, marginTop: 8 }}
+                    multiline
+                    rows={2}
+                    onChange={(e) => handle_sub_obj(e.target.value)}
+                    name="Sub Object Type"
+                    // value={path}
+                    className={classes.textField}
+                    variant="outlined"
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                  />
+                </>
+              ) : (
+                <TextField
+                  id="outlined-multiline-static"
+                  label="New Object Type"
+                  size="small"
+                  style={{ width: 350, marginTop: 8 }}
+                  multiline
+                  rows={1}
+                  onChange={(e) => setPath(e.target.value)}
+                  name="New Object Type"
+                  value={path}
+                  className={classes.textField}
+                  variant="outlined"
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                />
+              )}{" "}
               <Button
                 variant="outlined"
                 color="primary"
-                style={{ marginRight: 20, marginLeft: 100 }}
-                onClick={() =>
-                  handleObjectypeCreate(
-                    modelMigtype_ObjectCreation,
-                    Objtype_create
-                  )
-                }
+                // size='small'
+                style={{ marginTop: 7 }}
+                onClick={() => clearPath()}
               >
-                Create
+                Clear
               </Button>
-              <Button
-                variant="outlined"
-                color="secondary"
-                onClick={() => setOpen(false)}
-              >
-                Cancel
-              </Button>
-            </div>
-            {/* </form> */}
-          </Container>
-        </Modal>
+            </Grid>
+          </Grid>
+        </Box>
+
+        <Grid
+          container
+          direction="row"
+          justifyContent="center"
+          style={{ marginTop: 40, position: "relative" }}
+          // spacing={2}
+        >
+          <Button
+            variant="outlined"
+            color="primary"
+            align="center"
+            // style={{ marginRight: 20, marginLeft: 100 }}
+            onClick={() => handleObjectypeCreate(modelMigtype_ObjectCreation)}
+          >
+            Create
+          </Button>
+        </Grid>
       </Box>
       <Notification notify={notify} setNotify={setNotify} />
       <ConfirmDialog
         confirmDialog={confirmDialog}
         setConfirmDialog={setConfirmDialog}
       />
+
+      <></>
     </Box>
   );
 }
+
+function StyledTreeItem(props) {
+  const history = useHistory();
+  const classes = useTreeItemStyles();
+  const dispatch = useDispatch();
+  const IsSuperAdmin = sessionStorage.getItem("isSuperAdmin");
+  // const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, title: '', subTitle: '' })
+  const {
+    labelText,
+    labelIcon: LabelIcon,
+    labelInfo,
+    color,
+    bgColor,
+    mainheader,
+    data,
+    // deleteitem,
+    datavalue,
+    sub,
+    admin,
+    createflag,
+    ...other
+  } = props;
+
+  return (
+    <>
+      <TreeItem
+        // icon={ViewModuleIcon}
+        label={
+          <div className={classes.labelRoot}>
+            {/* <ViewModuleIcon color="inherit" className={classes.labelIcon} /> */}
+            <Typography
+              variant="body2"
+              className={classes.labelText}
+              style={{ color: "white" }}
+            >
+              {labelText}
+            </Typography>
+
+            <Typography
+              variant="caption"
+              color="inherit"
+              style={{ color: "white" }}
+            >
+              {labelInfo}
+            </Typography>
+          </div>
+        }
+        style={{
+          "--tree-view-color": color,
+          "--tree-view-bg-color": bgColor,
+        }}
+        classes={{
+          root: classes.root,
+          content: classes.content,
+          expanded: classes.expanded,
+          selected: classes.selected,
+          group: classes.group,
+          label: classes.label,
+        }}
+        {...other}
+      />
+    </>
+  );
+}
+
+StyledTreeItem.propTypes = {
+  bgColor: PropTypes.string,
+  color: PropTypes.string,
+  labelIcon: PropTypes.elementType.isRequired,
+  labelInfo: PropTypes.string,
+  labelText: PropTypes.string.isRequired,
+};
+
+const useTreeItemStyles = makeStyles((theme) => ({
+  root: {
+    color: theme.palette.text.secondary,
+    "&:hover > $content": {
+      backgroundColor: theme.palette.action.hover,
+    },
+    "&:focus > $content, &$selected > $content": {
+      backgroundColor: "#0A7D7F",
+      color: "",
+    },
+    "&:focus > $content $label, &:hover > $content $label, &$selected > $content $label":
+      {
+        backgroundColor: "transparent",
+      },
+  },
+  content: {
+    color: theme.palette.text.secondary,
+    borderTopRightRadius: theme.spacing(2),
+    borderBottomRightRadius: theme.spacing(2),
+    paddingRight: theme.spacing(1),
+    fontWeight: theme.typography.fontWeightMedium,
+    "$expanded > &": {
+      fontWeight: theme.typography.fontWeightRegular,
+    },
+  },
+  group: {
+    marginLeft: 0,
+    "& $content": {
+      paddingLeft: theme.spacing(2),
+    },
+  },
+  expanded: {},
+  selected: {},
+  label: {
+    fontWeight: "inherit",
+    color: "inherit",
+  },
+  labelRoot: {
+    display: "flex",
+    alignItems: "center",
+    padding: theme.spacing(0.5, 0),
+  },
+  labelIcon: {
+    marginRight: theme.spacing(1),
+  },
+  labelText: {
+    fontWeight: "inherit",
+    flexGrow: 1,
+  },
+}));

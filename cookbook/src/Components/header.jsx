@@ -455,7 +455,7 @@ export default function ClippedDrawer({ children }) {
 
     let body = {
       Migration_Name: value,
-      Project_Version_Id: "1",
+      Project_Version_Id: project_version,
       User_Email: sessionStorage.getItem("uemail"),
     };
 
@@ -506,14 +506,14 @@ export default function ClippedDrawer({ children }) {
   }, [updatedValue, project_version]);
 
   React.useEffect(() => {
-    if (headerValue?.title) {
+    if (headerValue?.Migration_Name) {
       let conf = {
         headers: {
           Authorization: "Bearer " + config.ACCESS_TOKEN(),
         },
       };
       let body = {
-        Migration_TypeId: headerValue?.title,
+        Migration_Name: headerValue?.Migration_Name,
       };
       const form = new FormData();
       Object.keys(body).forEach((key) => {
@@ -524,10 +524,10 @@ export default function ClippedDrawer({ children }) {
         .post(`${config.API_BASE_URL()}/api/project_versions_list/`, form, conf)
         .then(
           (res) => {
-            setSelect_pr_v(res.data.slice(-1)[0]?.title);
+            setSelect_pr_v(res.data.slice(-1)[0]?.Title);
             dispatch(Menuaction.getproj_header_dropdownlist(res.data));
 
-            dispatch(Menuaction.project_version(res.data.slice(-1)[0]?.code));
+            dispatch(Menuaction.project_version(res.data.slice(-1)[0]?.Code));
           },
           (error) => {
             setNotify({
@@ -538,7 +538,7 @@ export default function ClippedDrawer({ children }) {
           }
         );
     }
-  }, [headerValue?.title]);
+  }, [headerValue?.Migration_Name]);
 
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
@@ -625,6 +625,7 @@ export default function ClippedDrawer({ children }) {
     
     // console.log(v, ' =======')
     dispatch(ActionMenu.selectedMenutlist(v));
+    dispatch(Menuaction.lableselect(v?.Object_Type));
     // console.log(v," ===========")
   };
 
@@ -633,8 +634,8 @@ export default function ClippedDrawer({ children }) {
   };
 
   const handleProject_Version = (v) => {
-    setSelect_pr_v(v?.title);
-    dispatch(Menuaction.project_version(v?.code));
+    setSelect_pr_v(v?.Title);
+    dispatch(Menuaction.project_version(v?.Code));
 
     history.push("/dashboard");
   };
@@ -766,12 +767,12 @@ export default function ClippedDrawer({ children }) {
                   className={classes.inputRoottype}
                   options={project_header_dropdown}
                   groupBy={""}
-                  value={select_pr_v}
+                  // value={select_pr_v}
                   defaultValue={{
-                    title: project_header_dropdown.slice(-1)[0]?.title,
+                    Title: project_header_dropdown.slice(-1)[0]?.Title,
                   }}
                   // inputValue={select_pr_v}
-                  getOptionLabel={(option) => option.title}
+                  getOptionLabel={(option) => option.Title}
                   style={{ width: 110 }}
                   onChange={(e, v) => handleProject_Version(v)}
                   renderInput={(params) => (

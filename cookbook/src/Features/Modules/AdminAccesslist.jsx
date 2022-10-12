@@ -1,15 +1,29 @@
-import { Box, Grid, TextField, Typography, styled, Tooltip } from "@material-ui/core";
+import {
+  Box,
+  Grid,
+  TextField,
+  Typography,
+  styled,
+  Tooltip,
+} from "@material-ui/core";
+import TreeView from "@material-ui/lab/TreeView";
+import TreeItem from "@material-ui/lab/TreeItem";
+import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
+import ArrowRightIcon from "@material-ui/icons/ArrowRight";
+import PropTypes from "prop-types";
 import { Autocomplete } from "@material-ui/lab";
 import Button from "@material-ui/core/Button";
-import moment from 'moment';
-import DateFnsUtils from '@date-io/date-fns';
+import moment from "moment";
+import DateFnsUtils from "@date-io/date-fns";
 // import { format } from 'date-fns';
+import { useHistory } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import {
   MuiPickersUtilsProvider,
   KeyboardTimePicker,
   KeyboardDatePicker,
-  DateTimePicker
-} from '@material-ui/pickers';
+  DateTimePicker,
+} from "@material-ui/pickers";
 import FormControl from "@material-ui/core/FormControl";
 import InputLabel from "@material-ui/core/InputLabel";
 import React, { useEffect, useState } from "react";
@@ -31,19 +45,15 @@ import EditSharpIcon from "@material-ui/icons/EditSharp";
 import { TableContainer } from "@material-ui/core";
 import Notification from "../Notifications/Notification";
 
-import {
-  Container,
-  Modal,
-  Snackbar,
-} from "@material-ui/core";
+import { Container, Modal, Snackbar } from "@material-ui/core";
 import { LocalActivity } from "@material-ui/icons";
 
 const useStylestable = makeStyles((theme) => ({
   table: {
     // minWidth: 650
-    width: '95%',
-    marginLeft: 'auto',
-    marginRight: 'auto'
+    width: "95%",
+    marginLeft: "auto",
+    marginRight: "auto",
   },
   formControl: {
     margin: theme.spacing(0),
@@ -80,22 +90,18 @@ const StyledAutocomplete = styled(Autocomplete)({
 
 const useStyles = makeStyles((theme) => ({
   Accesslistcontainer: {
-   
-    [theme.breakpoints.down('sm')]: {
+    [theme.breakpoints.down("sm")]: {
       marginTop: "200px",
     },
-    [theme.breakpoints.up('sm')]: {
+    [theme.breakpoints.up("sm")]: {
       marginTop: "120px",
     },
-    [theme.breakpoints.up('md')]: {
+    [theme.breakpoints.up("md")]: {
       marginTop: "50px",
     },
-    [theme.breakpoints.up('lg')]: {
+    [theme.breakpoints.up("lg")]: {
       marginTop: "0px",
     },
-
-
-   
   },
 
   texttablecell: {
@@ -104,12 +110,12 @@ const useStyles = makeStyles((theme) => ({
     width: "180px",
     overflow: "hidden",
     textOverflow: "ellipsis",
-    '&:hover': {
-      overflow: 'visible'
-    }
+    "&:hover": {
+      overflow: "visible",
+    },
   },
   buttton: {
-    height: 10
+    height: 10,
   },
 
   table: {
@@ -144,7 +150,7 @@ const useStyles = makeStyles((theme) => ({
     left: 0,
     right: 0,
     margin: "auto",
-  }
+  },
 }));
 
 const StyledTableCell = withStyles((theme) => ({
@@ -173,7 +179,16 @@ const StyledTableRow = withStyles((theme) => ({
 
 export default function AdminAccesslist() {
   const classes = useStyles();
-  const { details, createFeature, preview, editpreview, editPreviewdetails, headerValue, lable, project_version } = useSelector(state => state.dashboardReducer);
+  const {
+    details,
+    createFeature,
+    preview,
+    editpreview,
+    editPreviewdetails,
+    headerValue,
+    lable,
+    project_version,
+  } = useSelector((state) => state.dashboardReducer);
   const classestable = useStylestable();
   const [isData, setIsData] = useState(true);
   const [openAlert, setOpenAlert] = useState(false);
@@ -182,39 +197,42 @@ export default function AdminAccesslist() {
   const [data, setData] = useState([]);
   const [isEdit, setEdit] = React.useState(false);
   const [isEditaccess, setEditaccess] = React.useState(false);
-  const [date, setDate] = useState()
+  const [date, setDate] = useState();
   const [selectedDate, handleDateChange] = useState(new Date());
-  const [selectedDateTable, setdateValue] = useState()
-  const [objtypelist, setObjtypeslist] = useState([])
-  const [userslist, setUserslist] = useState([])
-  const [approvalslist, setApprovallist] = useState([])
-  const [selecetd, setSelected] = useState(false)
-  const [permissionslist, setpermissionslist] = useState([])
-  const [fnname, setFnname] = useState()
+  const [selectedDateTable, setdateValue] = useState();
+  const [objtypelist, setObjtypeslist] = useState([]);
+  const [userslist, setUserslist] = useState([]);
+  const [approvalslist, setApprovallist] = useState([]);
+  const [selecetd, setSelected] = useState(false);
+  const [permissionslist, setpermissionslist] = useState([]);
+  const [fnname, setFnname] = useState();
   const [open1, setOpen1] = useState(false);
   const [notify, setNotify] = useState({
     isOpen: false,
     message: "",
     type: "",
   });
-  const [objcount, setobjcount] = useState(0)
-  const [updatetable, setupdateTable] = useState(false)
-  const [accesschnage, setaccesschange] = useState()
+  const [objcount, setobjcount] = useState(0);
+  const [updatetable, setupdateTable] = useState(false);
+  const [accesschnage, setaccesschange] = useState();
   // const [accesstypeslist, setAccesstypeslist] = useState([
   //   { title: "Edit", code: 'Edit' },
   //   { title: "View", code: 'View' },
   // ])
-
+  const [selectedItem, setSelectedItem] = useState({});
+  const [isselectedItem, setisSelectedItem] = useState(false);
+  const [path, setPath] = useState();
   // const [grant_mig_type, setGrant_mig_type]= useState()
-  const [grant_obj_type, setGrant_obj_type] = useState()
-  const [grant_access_type, setGrant_access_type] = useState()
-  const [grant_user, setGrant_user] = useState()
-  const [grant_featurename, setGrant_featurename] = useState('')
+  const [grant_obj_type, setGrant_obj_type] = useState();
+  const [grant_access_type, setGrant_access_type] = useState();
+  const [grant_user, setGrant_user] = useState();
+  const [grant_featurename, setGrant_featurename] = useState("");
   // const [grant_expiry_date, setGrant_expiry_date]= useState()
-  const [edithandle, setEdithandle] = useState([])
-  const [model_Item, setModel_Item] = useState([])
+  const [edithandle, setEdithandle] = useState([]);
+  const [model_Item, setModel_Item] = useState([]);
+  const [list_features, setList_of_features] = useState([]);
 
-  const [migtypeid, setMigtypeid] = useState(headerValue?.title);
+  const [migtypeid, setMigtypeid] = useState(headerValue?.Migration_Name);
   useEffect(() => {
     let conf = {
       headers: {
@@ -223,28 +241,25 @@ export default function AdminAccesslist() {
     };
     axios.get(`${config.API_BASE_URL()}/api/userslist/`, conf).then(
       (res) => {
-
-        setUserslist(res.data)
-
+        setUserslist(res.data);
       },
       (error) => {
         setNotify({
           isOpen: true,
-          message: 'Something Went Wrong Please try Again',
+          message: "Something Went Wrong Please try Again",
           type: "error",
         });
       }
     );
   }, []);
 
-
   useEffect(() => {
     if (headerValue) {
       if (Object.keys(headerValue).length > 0) {
         let body = {
-          "User_Email": sessionStorage.getItem('uemail'),
-          "Migration_TypeId": headerValue?.title,
-          "Object_Type": lable
+          User_Email: sessionStorage.getItem("uemail"),
+          Migration_TypeId: headerValue?.Migration_Name,
+          Object_Type: lable,
         };
         let conf = {
           headers: {
@@ -255,50 +270,46 @@ export default function AdminAccesslist() {
         Object.keys(body).forEach((key) => {
           form.append(key, body[key]);
         });
-        axios.post(`${config.API_BASE_URL()}/api/approvalslist`, form, conf).then(
-          (res) => {
-
-            setApprovallist(res.data)
-
-          },
-          (error) => {
-            setNotify({
-              isOpen: true,
-              message: 'Something Went Wrong Please try Again',
-              type: "error",
-            });
-          }
-        );
+        axios
+          .post(`${config.API_BASE_URL()}/api/approvalslist`, form, conf)
+          .then(
+            (res) => {
+              setApprovallist(res.data);
+            },
+            (error) => {
+              setNotify({
+                isOpen: true,
+                message: "Something Went Wrong Please try Again",
+                type: "error",
+              });
+            }
+          );
       }
     }
   }, [updatetable, headerValue, lable]);
 
-
-
   // Function to handle edit
   const handleEdit = (i) => {
-    // If edit mode is true setEdit will 
+    // If edit mode is true setEdit will
     // set it to false and vice versa
     setEdit(!isEdit);
   };
 
   const handleEditaccess = (i) => {
-    // If edit mode is true setEdit will 
+    // If edit mode is true setEdit will
     // set it to false and vice versa
     setEditaccess(!isEditaccess);
   };
 
-  const handleSaveDate = () => {
-
-  }
+  const handleSaveDate = () => {};
 
   const handleaccess = () => {
     // setEditaccess(!isEditaccess);
-  }
+  };
 
   const handledatedesible = () => {
-    setSelected(true)
-  }
+    setSelected(true);
+  };
 
   const handleClose = (event, reason) => {
     if (reason === "clickaway") {
@@ -311,27 +322,25 @@ export default function AdminAccesslist() {
   useEffect(() => {
     let sval = 0;
     // if (headerValue) {
-    //   if (headerValue?.title === "Oracle TO Postgres") {
+    //   if (headerValue?.Migration_Name === "Oracle TO Postgres") {
     //     sval = 1;
-    //   } else if (headerValue?.title === "SQLServer TO Postgres") {
+    //   } else if (headerValue?.Migration_Name === "SQLServer TO Postgres") {
     //     sval = 2;
-    //   } else if (headerValue?.title === "MYSQL TO Postgres") {
+    //   } else if (headerValue?.Migration_Name === "MYSQL TO Postgres") {
     //     sval = 3;
     //   }
     // }
 
-    if (objtype === 'ALL') {
-      setFnnames([{ 'Feature_Name': "ALL" }])
-    }
-    else if (objcount === 0) {
-      setFnnames([])
-    }
-    else {
+    if (objtype === "ALL") {
+      setFnnames([{ Feature_Name: "ALL" }]);
+    } else if (objcount === 0) {
+      setFnnames([]);
+    } else {
       let body = {
         Object_Type: objtype,
-        Migration_TypeId: headerValue?.title,
-        "Feature_Name": grant_featurename,
-        "Project_Version_Id": project_version
+        Migration_TypeId: headerValue?.Migration_Name,
+        Feature_Name: grant_featurename,
+        Project_Version_Id: project_version,
       };
       let conf = {
         headers: {
@@ -342,31 +351,32 @@ export default function AdminAccesslist() {
       Object.keys(body).forEach((key) => {
         form.append(key, body[key]);
       });
-      axios.post(`${config.API_BASE_URL()}/api/requestfndata/`, form, conf).then(
-        (res) => {
-          // setFnnames(res.data);
-          // console.log(res.data);
-          setFnnames([{ 'Feature_Name': "ALL" }].concat(res.data))
-        },
-        (error) => {
-          setNotify({
-            isOpen: true,
-            message: 'Something Went Wrong Please try Again',
-            type: "error",
-          });
-        }
-      );
+      axios
+        .post(`${config.API_BASE_URL()}/api/requestfndata/`, form, conf)
+        .then(
+          (res) => {
+            // setFnnames(res.data);
+            // console.log(res.data);
+            setFnnames([{ Feature_Name: "ALL" }].concat(res.data));
+          },
+          (error) => {
+            setNotify({
+              isOpen: true,
+              message: "Something Went Wrong Please try Again",
+              type: "error",
+            });
+          }
+        );
     }
-
   }, []);
 
   const handleObjecttype = (v) => {
     setObjtype(v?.Object_Type);
-    setGrant_obj_type(v?.Object_Type)
+    setGrant_obj_type(v?.Object_Type);
     let body = {
       Object_Type: v?.Object_Type,
-      Migration_TypeId: headerValue?.title,
-      "Project_Version_Id": project_version
+      Migration_TypeId: headerValue?.Migration_Name,
+      Project_Version_Id: project_version,
     };
     let conf = {
       headers: {
@@ -378,31 +388,31 @@ export default function AdminAccesslist() {
       form.append(key, body[key]);
     });
     if (objcount === 0) {
-      setFnnames([])
-    }
-    else if (v?.Object_Type === 'ALL') {
-      setFnnames([{ 'Feature_Name': "ALL" }])
+      setFnnames([]);
+    } else if (v?.Object_Type === "ALL") {
+      setFnnames([{ Feature_Name: "ALL" }]);
     } else {
-      axios.post(`${config.API_BASE_URL()}/api/requestfndata/`, form, conf).then(
-        (res) => {
-          // setFnnames(res.data);
-          setFnnames([{ 'Feature_Name': "ALL" }].concat(res.data))
-          console.log(res.data);
-        },
-        (error) => {
-          setNotify({
-            isOpen: true,
-            message: 'Something Went Wrong Please try Again',
-            type: "error",
-          });
-        }
-      );
+      axios
+        .post(`${config.API_BASE_URL()}/api/requestfndata/`, form, conf)
+        .then(
+          (res) => {
+            // setFnnames(res.data);
+            setFnnames([{ Feature_Name: "ALL" }].concat(res.data));
+            console.log(res.data);
+          },
+          (error) => {
+            setNotify({
+              isOpen: true,
+              message: "Something Went Wrong Please try Again",
+              type: "error",
+            });
+          }
+        );
     }
-
   };
 
   const handledropdown = (e, v) => {
-    setGrant_featurename(v?.Feature_Name)
+    setGrant_featurename(v?.Feature_Name);
     // let conf = {
     //   headers: {
     //     Authorization: "Bearer " + config.ACCESS_TOKEN(),
@@ -422,10 +432,7 @@ export default function AdminAccesslist() {
     //       console.log(error);
     //     }
     //   );
-
   };
-
-
 
   useEffect(() => {
     if (headerValue) {
@@ -436,69 +443,66 @@ export default function AdminAccesslist() {
           },
         };
         let body = {
-          "Migration_TypeId": headerValue?.title,
-          "Object_Type": lable,
-          "User_Email": sessionStorage.getItem('uemail')
+          Migration_Name: headerValue?.Migration_Name,
+          // "Object_Type": lable,
+          // "User_Email": sessionStorage.getItem('uemail'),
+          Project_Version_Id: project_version,
         };
 
         const form = new FormData();
         Object.keys(body).forEach((key) => {
           form.append(key, body[key]);
         });
-        axios.post(`${config.API_BASE_URL()}/api/objectadminviewtlist/`, form, conf).then(
-          (res) => {
-            if (res.data.length > 0) {
-              setObjtypeslist(res.data)
-              setobjcount(1)
+        axios
+          .post(`${config.API_BASE_URL()}/api/object_types_format/`, form, conf)
+          .then(
+            (res) => {
+              if (res.data.length > 0) {
+                setObjtypeslist(res.data);
+                setobjcount(1);
+              }
+            },
+            (error) => {
+              setNotify({
+                isOpen: true,
+                message: "Something Went Wrong Please try Again",
+                type: "error",
+              });
             }
-
-
-          },
-          (error) => {
-            setNotify({
-              isOpen: true,
-              message: 'Something Went Wrong Please try Again',
-              type: "error",
-            });
-          }
-        );
-
+          );
       }
     }
-
   }, [headerValue, lable]);
 
-
-
-  const handleversion = (v) => { setGrant_access_type(v?.title) };
-  const handleUsername = (v) => { setGrant_user(v?.email) };
+  const handleversion = (v) => {
+    setGrant_access_type(v?.title);
+  };
+  const handleUsername = (v) => {
+    setGrant_user(v?.email);
+  };
 
   const handleDate = (e) => {
-    setData(e.target.value)
-  }
-
+    setData(e.target.value);
+  };
 
   const handleRequestAccessApproved = (item, action) => {
     const form = new FormData();
 
     let body = {
-      "User_Email": item.User_Email,
-      "Migration_TypeId": item.Migration_TypeId,
-      "Object_Type": item.Object_Type,
-      "Feature_Name": item.Feature_Name,
-      "Access_Type": item.Access_Type,
-      'Created_at': item.Created_at,
-      'Expiry_date': moment(item.Expiry_date).format('YYYY-MM-DD'),
-      "Approval_Status": action,
-      "Approved_by": sessionStorage.getItem('uemail'),
-      "Project_Version_Id": 1,
+      User_Email: item.User_Email,
+      Migration_TypeId: item.Migration_TypeId,
+      Object_Type: item.Object_Type,
+      Feature_Name: item.Feature_Name,
+      Access_Type: item.Access_Type,
+      Created_at: item.Created_at,
+      Expiry_date: moment(item.Expiry_date).format("YYYY-MM-DD"),
+      Approval_Status: action,
+      Approved_by: sessionStorage.getItem("uemail"),
+      Project_Version_Id: 1,
     };
     Object.keys(body).forEach((key) => {
       form.append(key, body[key]);
     });
-
-
-
 
     let conf = {
       headers: {
@@ -506,54 +510,60 @@ export default function AdminAccesslist() {
       },
     };
 
+    axios
+      .post(`${config.API_BASE_URL()}/api/permissionscreate/`, form, conf)
+      .then(
+        (res) => {
+          if (res.data !== "User already has permission") {
+            handleUpdateApproval(
+              res.data.Expiry_date,
+              res.data.Access_Type,
+              item,
+              action
+            );
+          } else {
+            handleUpdateApproval(
+              item.Expiry_date,
+              item.Access_Type,
+              item,
+              action
+            );
+          }
 
-    axios.post(`${config.API_BASE_URL()}/api/permissionscreate/`, form, conf).then(
-      (res) => {
-        if (res.data !== 'User already has permission') {
-          handleUpdateApproval(res.data.Expiry_date, res.data.Access_Type, item, action)
-        } else {
-          handleUpdateApproval(item.Expiry_date, item.Access_Type, item, action)
+          // setNotify({
+          //   isOpen: true,
+          //   message: "Request Accepted",
+          //   type: "success",
+          // });
+        },
+
+        (error) => {
+          setNotify({
+            isOpen: true,
+            message: "Something Went Wrong Please try Again",
+            type: "error",
+          });
         }
-
-
-
-        // setNotify({
-        //   isOpen: true,
-        //   message: "Request Accepted",
-        //   type: "success",
-        // });
-      },
-
-      (error) => {
-        setNotify({
-          isOpen: true,
-          message: 'Something Went Wrong Please try Again',
-          type: "error",
-        });
-      }
-    );
-  }
+      );
+  };
 
   const handleRequestAccessDeny = (item, action) => {
     const form = new FormData();
 
     let body = {
-      "User_Email": item.User_Email,
-      "Migration_TypeId": item.Migration_TypeId,
-      "Object_Type": item.Object_Type,
-      "Feature_Name": item.Feature_Name,
-      "Access_Type": item.Access_Type,
-      'Created_at': item.Created_at,
-      'Expiry_date': item.Expiry_date,
-      "Approval_Status": action,
-      "Approved_by": sessionStorage.getItem('uemail')
+      User_Email: item.User_Email,
+      Migration_TypeId: item.Migration_TypeId,
+      Object_Type: item.Object_Type,
+      Feature_Name: item.Feature_Name,
+      Access_Type: item.Access_Type,
+      Created_at: item.Created_at,
+      Expiry_date: item.Expiry_date,
+      Approval_Status: action,
+      Approved_by: sessionStorage.getItem("uemail"),
     };
     Object.keys(body).forEach((key) => {
       form.append(key, body[key]);
     });
-
-
-
 
     let conf = {
       headers: {
@@ -561,10 +571,9 @@ export default function AdminAccesslist() {
       },
     };
 
-    if (action === 'Denied') {
-      handleUpdateApproval(item.Expiry_date, item.Access_Type, item, action)
+    if (action === "Denied") {
+      handleUpdateApproval(item.Expiry_date, item.Access_Type, item, action);
     }
-
 
     // axios.post(`${config.API_BASE_URL()}/api/permissionscreate/`, form, conf).then(
     //   (res) => {
@@ -588,34 +597,36 @@ export default function AdminAccesslist() {
     //     // });
     //   }
     // );
-  }
+  };
 
-
-  const handleUpdateApproval = (selectedDateTable, accesschnage, item, action) => {
+  const handleUpdateApproval = (
+    selectedDateTable,
+    accesschnage,
+    item,
+    action
+  ) => {
     const form = new FormData();
     let Expiry_date;
 
-    Expiry_date = moment(selectedDateTable).format('YYYY-MM-DD')
-
+    Expiry_date = moment(selectedDateTable).format("YYYY-MM-DD");
 
     let body = {
-      "User_Email": item.User_Email,
-      "Access_Type": accesschnage,
-      "Expiry_date": Expiry_date,
-      "Migration_TypeId": item.Migration_TypeId,
-      "Object_Type": item.Object_Type,
-      "Feature_Name": item.Feature_Name,
-      'Created_at': item.Created_at,
-      "Approval_Status": action,
-      "id": item.id,
-      "Approved_by": sessionStorage.getItem('uemail'),
-      "Project_Version_Id": 1,
-    }
+      User_Email: item.User_Email,
+      Access_Type: accesschnage,
+      Expiry_date: Expiry_date,
+      Migration_TypeId: item.Migration_TypeId,
+      Object_Type: item.Object_Type,
+      Feature_Name: item.Feature_Name,
+      Created_at: item.Created_at,
+      Approval_Status: action,
+      id: item.id,
+      Approved_by: sessionStorage.getItem("uemail"),
+      Project_Version_Id: 1,
+    };
 
     Object.keys(body).forEach((key) => {
       form.append(key, body[key]);
     });
-
 
     let conf = {
       headers: {
@@ -623,47 +634,46 @@ export default function AdminAccesslist() {
       },
     };
 
-
-    axios.put(`${config.API_BASE_URL()}/api/approvalsupdate/${item.id}`, form, conf).then(
-      (res) => {
-
-        setOpen1(false)
-        setupdateTable(true)
-      },
-      (error) => {
-
-        setOpen1(false)
-      }
-    );
-    setupdateTable(false)
-  }
+    axios
+      .put(
+        `${config.API_BASE_URL()}/api/approvalsupdate/${item.id}`,
+        form,
+        conf
+      )
+      .then(
+        (res) => {
+          setOpen1(false);
+          setupdateTable(true);
+        },
+        (error) => {
+          setOpen1(false);
+        }
+      );
+    setupdateTable(false);
+  };
 
   const handleEditAcesschange = (e) => {
-    setaccesschange(e.target.value)
-  }
-
+    setaccesschange(e.target.value);
+  };
 
   const handleGrant_permission_create = (item, action) => {
     const form = new FormData();
 
     let body = {
-      "User_Email": item.User_Email,
-      "Migration_TypeId": item.Migration_TypeId,
-      "Object_Type": item.Object_Type,
-      "Feature_Name": item.Feature_Name,
-      "Access_Type": item.Access_Type,
-      'Created_at': item.Created_at,
-      'Expiry_date': moment(item.Expiry_date).format('YYYY-MM-DD'),
-      "Approval_Status": action,
-      "Approved_by": sessionStorage.getItem('uemail'),
-      "Project_Version_Id": 1,
+      User_Email: item.User_Email,
+      Migration_TypeId: item.Migration_TypeId,
+      Object_Type: item.Object_Type,
+      Feature_Name: item.Feature_Name,
+      Access_Type: item.Access_Type,
+      Created_at: item.Created_at,
+      Expiry_date: moment(item.Expiry_date).format("YYYY-MM-DD"),
+      Approval_Status: action,
+      Approved_by: sessionStorage.getItem("uemail"),
+      Project_Version_Id: 1,
     };
     Object.keys(body).forEach((key) => {
       form.append(key, body[key]);
     });
-
-
-
 
     let conf = {
       headers: {
@@ -671,48 +681,47 @@ export default function AdminAccesslist() {
       },
     };
 
+    axios
+      .post(`${config.API_BASE_URL()}/api/permissionscreate/`, form, conf)
+      .then(
+        (res) => {
+          if (res.data === "User already has permission") {
+            setNotify({
+              isOpen: true,
+              message: res.data,
+              type: "error",
+            });
+          } else {
+            setNotify({
+              isOpen: true,
+              message: "Request Creted and acepted Permissions",
+              type: "success",
+            });
+          }
+          // handleUpdateApproval(res.data.Expiry_date, res.data.Created_at, item, action)
+        },
 
-    axios.post(`${config.API_BASE_URL()}/api/permissionscreate/`, form, conf).then(
-      (res) => {
-        if (res.data === 'User already has permission') {
+        (error) => {
           setNotify({
             isOpen: true,
-            message: res.data,
+            message: "Something Went Wrong Please try Again",
             type: "error",
           });
-        } else {
-          setNotify({
-            isOpen: true,
-            message: "Request Creted and acepted Permissions",
-            type: "success",
-          });
         }
-        // handleUpdateApproval(res.data.Expiry_date, res.data.Created_at, item, action)
-      },
-
-      (error) => {
-        setNotify({
-          isOpen: true,
-          message: 'Something Went Wrong Please try Again',
-          type: "error",
-        });
-      }
-    );
-  }
-
+      );
+  };
 
   const handleGrantAcess = () => {
-
     let body = {
-      "Object_Type": grant_obj_type,
-      "Migration_TypeId": headerValue?.title,
-      "User_Email": grant_user,
-      "Feature_Name": grant_featurename,
-      "Approval_Status": 'Approved',
-      "Access_Type": grant_access_type,
-      "Expiry_date": moment(selectedDate).format('YYYY-MM-DD'),
-      "Approved_by": sessionStorage.getItem('uemail'),
-      "Project_Version_Id": 1,
+      Object_Type: grant_obj_type,
+      Migration_TypeId: headerValue?.Migration_Name,
+      User_Email: grant_user,
+      Feature_Name: grant_featurename,
+      Approval_Status: "Approved",
+      Access_Type: grant_access_type,
+      Expiry_date: moment(selectedDate).format("YYYY-MM-DD"),
+      Approved_by: sessionStorage.getItem("uemail"),
+      Project_Version_Id: 1,
     };
     let conf = {
       headers: {
@@ -726,47 +735,137 @@ export default function AdminAccesslist() {
     // console.log(`${config.API_BASE_URL()}/api/grantaccess/`)
     axios.post(`${config.API_BASE_URL()}/api/grantaccess/`, form, conf).then(
       (res) => {
-        handleGrant_permission_create(res.data, 'Approved')
+        handleGrant_permission_create(res.data, "Approved");
 
         // setNotify({
         //   isOpen: true,
         //   message: "Request Creted and acepted Permissions",
         //   type: "success",
         // });
-        setupdateTable(true)
-
+        setupdateTable(true);
       },
       (error) => {
         setNotify({
           isOpen: true,
-          message: 'Something Went Wrong Please try Again',
+          message: "Something Went Wrong Please try Again",
           type: "error",
         });
       }
     );
-    setupdateTable(false)
-  }
+    setupdateTable(false);
+  };
 
   const handleModelopen = (item) => {
     // debugger
-    setOpen1(true)
-    setModel_Item(item)
-  }
+    setOpen1(true);
+    setModel_Item(item);
+  };
   const handleChangeDate = (date) => {
-    date = moment(date).format('YYYY-MM-DD');
+    date = moment(date).format("YYYY-MM-DD");
     setModel_Item({
       ...model_Item,
-      Expiry_date: date
-    })
-  }
+      Expiry_date: date,
+    });
+  };
 
   const handleSelectgroup = (value) => {
     setModel_Item({
       ...model_Item,
-      Access_Type: value
-    })
-  }
-  console.log(objtypelist)
+      Access_Type: value,
+    });
+  };
+
+  const handleTreeItemClick = (obj) => {
+    if (path) {
+      let mod_str = path.split("/");
+      let identified_str = mod_str.pop();
+      // console.log(identified_str)
+      // console.log(identified_str, '===', obj)
+      if (identified_str === obj) {
+        setPath(path);
+      } else {
+        setPath(path + "/" + obj);
+      }
+    } else {
+      setPath(obj);
+    }
+    // console.log(path, ' path')
+  };
+
+  const handleTreeStructureselected = (v) => {
+    setSelectedItem(v);
+    setisSelectedItem(true);
+  };
+
+  const clearPath = () => {
+    setPath("");
+  };
+
+  const call_Features = (path) => {
+    let conf = {
+      headers: {
+        Authorization: "Bearer " + config.ACCESS_TOKEN(),
+      },
+    };
+    // console.log(project_version, " project versin");
+    let body = {
+      Project_Version_Id: project_version,
+      Migration_Name: headerValue?.Migration_Name,
+      Object_Type_String: path,
+    };
+
+    const form = new FormData();
+    Object.keys(body).forEach((key) => {
+      form.append(key, body[key]);
+    });
+
+    axios.post(`${config.API_BASE_URL()}/api/features_list/`, form, conf).then(
+      (res) => {
+        setList_of_features([{ Feature_Name: "ALL" }].concat(res.data));
+      },
+      (error) => {
+        setNotify({
+          isOpen: true,
+          message: "Something went wrong Please try Again",
+          type: "error",
+        });
+      }
+    );
+  };
+  const RenderTree = (nodes) => {
+    // console.log("selection path ", );
+    // const history = useHistory();
+    return (
+      <TreeItem
+        key={nodes?.Object_Type}
+        nodeId={nodes?.Object_Type}
+        onLabelClick={() => {
+          handleTreeItemClick(nodes?.Object_Type);
+        }}
+        label={
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              padding: 5,
+            }}
+          >
+            <Typography
+              variant="body2"
+              style={{ color: "black", fontWeight: "inherit", flexGrow: 1 }}
+            >
+              {nodes?.Object_Type}
+            </Typography>
+          </div>
+        }
+      >
+        {Array?.isArray(nodes?.Sub_Objects)
+          ? nodes?.Sub_Objects.map((node) => RenderTree(node))
+          : null}
+      </TreeItem>
+    );
+  };
+
   return (
     <div className={classes.Accesslistcontainer}>
       <Box py={1} px={1}>
@@ -777,8 +876,8 @@ export default function AdminAccesslist() {
         </Grid>
       </Box>
       <Box py={2} px={2}>
-        <Grid container direction='row' justifyContent='space-around' spacing={1}>
-          <Grid item >
+        <Grid container direction="row" justifyContent="center" spacing={2}>
+          <Grid item>
             <TextField
               id="outlined-multiline-static"
               label="Migration Type"
@@ -793,13 +892,13 @@ export default function AdminAccesslist() {
                 shrink: true,
               }}
               fullWidth
-              value={headerValue?.title}
+              value={headerValue?.Migration_Name}
               size="small"
               disabled
               style={{ width: 300 }}
             />
           </Grid>
-          <Grid item >
+          <Grid item>
             <StyledAutocomplete
               size="small"
               id="grouped-demo"
@@ -809,7 +908,10 @@ export default function AdminAccesslist() {
               // defaultValue={{ title: "Procedure" }}
               getOptionLabel={(option) => option.Object_Type}
               style={{ width: 300 }}
-              onChange={(e, v) => handleObjecttype(v)}
+              onChange={(e, v) => {
+                handleTreeStructureselected(v);
+                clearPath();
+              }}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -819,13 +921,78 @@ export default function AdminAccesslist() {
                     className: classes.floatingLabelFocusStyle,
                     shrink: true,
                   }}
-
                 />
               )}
             />
           </Grid>
-
-          <Grid item >
+          <Grid item>
+            <TreeView
+              className={classes.root}
+              defaultExpanded={["3"]}
+              // expanded={true}
+              defaultCollapseIcon={<ArrowDropDownIcon />}
+              defaultExpandIcon={<ArrowRightIcon />}
+              defaultEndIcon={<div style={{ width: 24 }} />}
+              sx={{
+                height: 264,
+                flexGrow: 1,
+                maxWidth: 400,
+                overflowY: "auto",
+              }}
+            >
+              {RenderTree(selectedItem)}
+            </TreeView>
+          </Grid>
+        </Grid>
+      </Box>
+{isselectedItem?<>
+      <Box py={2} px={2}>
+        <Grid
+          container
+          direction="row"
+          justifyContent="center"
+          spacing={1}
+        >
+          <Grid item>
+            <TextField
+              id="outlined-multiline-static"
+              label="Selected Path"
+              size="small"
+              style={{ width: 300 }}
+              multiline
+              rows={1}
+              // onChange={(e) => handlePath()}
+              name="Selected Path"
+              value={path}
+              className={classes.textField}
+              variant="outlined"
+              InputLabelProps={{
+                shrink: true,
+              }}
+              disabled
+            />
+          </Grid>
+          <Grid item>
+            <Button
+              variant="outlined"
+              color="primary"
+              size="small"
+              style={{ marginTop: 6 }}
+              onClick={() => call_Features(path)}
+            >
+              Submit
+            </Button>{" "}
+            <Button
+              variant="outlined"
+              color="primary"
+              size="small"
+              style={{ marginTop: 6 }}
+              onClick={() => clearPath()}
+            >
+              Clear
+            </Button>
+          </Grid>
+          <Grid item>
             <StyledAutocomplete
               size="small"
               id="grouped-demo"
@@ -845,22 +1012,23 @@ export default function AdminAccesslist() {
                     className: classes.floatingLabelFocusStyle,
                     shrink: true,
                   }}
-
                 />
               )}
             />
           </Grid>
         </Grid>
-        <Grid container direction='row' justifyContent='space-around' spacing={1}>
-          <Grid item >
+      </Box>
+      <Box py={2} px={2}>
+        <Grid container direction="row" justifyContent="center" spacing={1}>
+          <Grid item>
             <StyledAutocomplete
               size="small"
               id="grouped-demo"
               className={classes.inputRoottype}
               options={[
-                { title: "Edit", code: 'Edit' },
-                { title: "View", code: 'View' },
-                { title: "ALL", code: 'ALL' },
+                { title: "Edit", code: "Edit" },
+                { title: "View", code: "View" },
+                { title: "ALL", code: "ALL" },
               ]}
               groupBy={""}
               // defaultValue={{ title: "Edit" }}
@@ -880,7 +1048,7 @@ export default function AdminAccesslist() {
               )}
             />
           </Grid>
-          <Grid item >
+          <Grid item>
             <StyledAutocomplete
               size="small"
               id="grouped-demo"
@@ -904,60 +1072,27 @@ export default function AdminAccesslist() {
               )}
             />
           </Grid>
-          <Grid item >
-
-            <MuiPickersUtilsProvider utils={DateFnsUtils} >
-
+          <Grid item>
+            <MuiPickersUtilsProvider utils={DateFnsUtils}>
               <KeyboardDatePicker
                 margin="normal"
-                size='small'
+                size="small"
                 id="date-picker-dialog"
                 inputVariant="outlined"
                 label="Expiry Date"
-                style={{ width: 300, marginTop: '10px' }}
+                style={{ width: 300, marginTop: "10px" }}
                 format="MM/dd/yyyy"
                 value={selectedDate}
                 onChange={handleDateChange}
                 KeyboardButtonProps={{
-                  'aria-label': 'change date',
+                  "aria-label": "change date",
                 }}
-
               />
-
-
             </MuiPickersUtilsProvider>
-
           </Grid>
-          {/* <Grid item xs={4}>
-
-            <StyledAutocomplete
-              size="small"
-              id="grouped-demo"
-              className={classes.inputRoottype}
-              options={[
-                { title: "28-02-2022", code: 1 },
-                { title: "29-02-2022", code: 2 },
-                { title: "30-02-2022", code: 3 },
-              ]}
-              groupBy={""}
-              defaultValue={{ title: "Expiry Date" }}
-              getOptionLabel={(option) => option.title}
-              style={{ width: 300, marginTop: 10 }}
-              onChange={(e, v) => handleversion(v)}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Expiry On"
-                  variant="outlined"
-                  InputLabelProps={{
-                    className: classes.floatingLabelFocusStyle,
-                  }}
-                />
-              )}
-            />
-          </Grid> */}
         </Grid>
       </Box>
+</>:null}
       <Box>
         <Grid container direction="row" justifyContent="center">
           <Button
@@ -967,7 +1102,9 @@ export default function AdminAccesslist() {
             color="primary"
             component="span"
             style={{ marginTop: 15 }}
-            onClick={() => { handleGrantAcess() }}
+            onClick={() => {
+              handleGrantAcess();
+            }}
           >
             {" "}
             Grant Access
@@ -1007,8 +1144,7 @@ export default function AdminAccesslist() {
                 <TableBody>
                   {isData ? (
                     <>
-                      {approvalslist.map((item) =>
-
+                      {approvalslist.map((item) => (
                         <StyledTableRow container>
                           <StyledTableCell item xl={10}>
                             <div className={classes.texttablecell}>
@@ -1017,9 +1153,7 @@ export default function AdminAccesslist() {
                           </StyledTableCell>
                           <StyledTableCell item xl={6}>
                             <div className={classes.texttablecell}>
-
                               {item.Access_Type}
-
                             </div>
                           </StyledTableCell>
                           <StyledTableCell item xl={5}>
@@ -1050,15 +1184,17 @@ export default function AdminAccesslist() {
                                 {item.Approval_Status === "Pending" ? (
                                   <Tooltip
                                     title="Edit"
-                                    label='Edit'
+                                    label="Edit"
                                     aria-label="Edit"
-                                    onClick={() => { handleModelopen(item) }}
+                                    onClick={() => {
+                                      handleModelopen(item);
+                                    }}
                                   >
-
                                     <EditSharpIcon style={{ color: "blue" }} />
                                   </Tooltip>
-                                ) : "No Actions"}
-
+                                ) : (
+                                  "No Actions"
+                                )}
                               </Grid>
                             </StyledTableCell>
                           </StyledTableCell>
@@ -1071,32 +1207,46 @@ export default function AdminAccesslist() {
                                   variant="contained"
                                   color="primary"
                                   className={classes.submit}
-                                  style={{ marginTop: '9px', fontSize: '9px', marginBottom: '8px' }}
-                                  onClick={(e) => { handleRequestAccessApproved(item, "Approved") }}
+                                  style={{
+                                    marginTop: "9px",
+                                    fontSize: "9px",
+                                    marginBottom: "8px",
+                                  }}
+                                  onClick={(e) => {
+                                    handleRequestAccessApproved(
+                                      item,
+                                      "Approved"
+                                    );
+                                  }}
                                 >
                                   APPROVE
-                                </Button>
-                                {' '}
+                                </Button>{" "}
                                 <Button
                                   type="button"
                                   size="small"
                                   variant="contained"
                                   color="primary"
                                   className={classes.submit}
-                                  style={{ marginTop: '9px', fontSize: '9px', marginBottom: '8px' }}
-                                  onClick={(e) => { handleRequestAccessDeny(item, "Denied") }}
+                                  style={{
+                                    marginTop: "9px",
+                                    fontSize: "9px",
+                                    marginBottom: "8px",
+                                  }}
+                                  onClick={(e) => {
+                                    handleRequestAccessDeny(item, "Denied");
+                                  }}
                                 >
                                   Deny
                                 </Button>
-
                               </div>
-                            ) : <div className={classes.texttablecell}>
-                              {item.Approval_Status}
-                            </div>
-                            }
+                            ) : (
+                              <div className={classes.texttablecell}>
+                                {item.Approval_Status}
+                              </div>
+                            )}
                           </StyledTableCell>
                         </StyledTableRow>
-                      )}
+                      ))}
                     </>
                   ) : (
                     <>
@@ -1110,10 +1260,7 @@ export default function AdminAccesslist() {
                         <StyledTableCell align="center"></StyledTableCell>
                       </StyledTableRow>
                     </>
-
-                  )
-
-                  }
+                  )}
                 </TableBody>
                 {/* </Table> */}
               </Table>
@@ -1124,16 +1271,18 @@ export default function AdminAccesslist() {
             autoHideDuration={4000}
             onClose={handleClose}
             anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-          >
-          </Snackbar>
+          ></Snackbar>
           <Modal open={open1}>
-            <Container className={classes.container1} style={{ marginBottom: 200 }}>
+            <Container
+              className={classes.container1}
+              style={{ marginBottom: 200 }}
+            >
               <Typography
                 gutterBottom
                 align="center"
                 variant="h6"
                 component="h2"
-                style={{ marginBottom: '20px' }}
+                style={{ marginBottom: "20px" }}
               >
                 Edit Data
               </Typography>
@@ -1144,9 +1293,9 @@ export default function AdminAccesslist() {
                   id="grouped-demo"
                   className={classes.inputRoottype}
                   options={[
-                    { title: "Edit", code: 'Edit' },
-                    { title: "View", code: 'View' },
-                    { title: "ALL", code: 'ALL' },
+                    { title: "Edit", code: "Edit" },
+                    { title: "View", code: "View" },
+                    { title: "ALL", code: "ALL" },
                   ]}
                   groupBy={""}
                   defaultValue={{ title: model_Item.Access_Type }}
@@ -1166,35 +1315,39 @@ export default function AdminAccesslist() {
                     />
                   )}
                 />
-
-
               </Grid>
               <Grid item xs={12} sm={4} md={4} xl={4}>
-                <MuiPickersUtilsProvider utils={DateFnsUtils} >
-
+                <MuiPickersUtilsProvider utils={DateFnsUtils}>
                   <KeyboardDatePicker
                     margin="normal"
                     id="date-picker-dialog"
                     inputVariant="outlined"
                     label="Expiry Date"
-                    style={{ width: 330, marginTop: '30px' }}
+                    style={{ width: 330, marginTop: "30px" }}
                     format="MM/dd/yyyy"
                     value={model_Item.Expiry_date}
                     size="small"
-                    onChange={date => handleChangeDate(date)}
+                    onChange={(date) => handleChangeDate(date)}
                     defaultValue={model_Item.Expiry_date}
                     KeyboardButtonProps={{
-                      'aria-label': 'change date',
+                      "aria-label": "change date",
                     }}
                   />
                 </MuiPickersUtilsProvider>
               </Grid>
-              <div className={classes.item} >
+              <div className={classes.item}>
                 <Button
                   variant="outlined"
                   color="primary"
-                  style={{ marginRight: 20, marginLeft: 70, marginTop: '20px' }}
-                  onClick={() => handleUpdateApproval(model_Item.Expiry_date, model_Item.Access_Type, model_Item, 'Pending')}
+                  style={{ marginRight: 20, marginLeft: 70, marginTop: "20px" }}
+                  onClick={() =>
+                    handleUpdateApproval(
+                      model_Item.Expiry_date,
+                      model_Item.Access_Type,
+                      model_Item,
+                      "Pending"
+                    )
+                  }
                 >
                   Save
                 </Button>
@@ -1202,7 +1355,7 @@ export default function AdminAccesslist() {
                   variant="outlined"
                   color="secondary"
                   onClick={() => setOpen1(false)}
-                  style={{ marginTop: '20px' }}
+                  style={{ marginTop: "20px" }}
                 >
                   Cancel
                 </Button>
@@ -1215,3 +1368,126 @@ export default function AdminAccesslist() {
     </div>
   );
 }
+
+function StyledTreeItem(props) {
+  const history = useHistory();
+  const classes = useTreeItemStyles();
+  const dispatch = useDispatch();
+  const IsSuperAdmin = sessionStorage.getItem("isSuperAdmin");
+  // const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, title: '', subTitle: '' })
+  const {
+    labelText,
+    labelIcon: LabelIcon,
+    labelInfo,
+    color,
+    bgColor,
+    mainheader,
+    data,
+    // deleteitem,
+    datavalue,
+    sub,
+    admin,
+    createflag,
+    ...other
+  } = props;
+
+  return (
+    <>
+      <TreeItem
+        // icon={ViewModuleIcon}
+        label={
+          <div className={classes.labelRoot}>
+            {/* <ViewModuleIcon color="inherit" className={classes.labelIcon} /> */}
+            <Typography
+              variant="body2"
+              className={classes.labelText}
+              style={{ color: "white" }}
+            >
+              {labelText}
+            </Typography>
+
+            <Typography
+              variant="caption"
+              color="inherit"
+              style={{ color: "white" }}
+            >
+              {labelInfo}
+            </Typography>
+          </div>
+        }
+        style={{
+          "--tree-view-color": color,
+          "--tree-view-bg-color": bgColor,
+        }}
+        classes={{
+          root: classes.root,
+          content: classes.content,
+          expanded: classes.expanded,
+          selected: classes.selected,
+          group: classes.group,
+          label: classes.label,
+        }}
+        {...other}
+      />
+    </>
+  );
+}
+
+StyledTreeItem.propTypes = {
+  bgColor: PropTypes.string,
+  color: PropTypes.string,
+  labelIcon: PropTypes.elementType.isRequired,
+  labelInfo: PropTypes.string,
+  labelText: PropTypes.string.isRequired,
+};
+
+const useTreeItemStyles = makeStyles((theme) => ({
+  root: {
+    color: theme.palette.text.secondary,
+    "&:hover > $content": {
+      backgroundColor: theme.palette.action.hover,
+    },
+    "&:focus > $content, &$selected > $content": {
+      backgroundColor: "#0A7D7F",
+      color: "",
+    },
+    "&:focus > $content $label, &:hover > $content $label, &$selected > $content $label":
+      {
+        backgroundColor: "transparent",
+      },
+  },
+  content: {
+    color: theme.palette.text.secondary,
+    borderTopRightRadius: theme.spacing(2),
+    borderBottomRightRadius: theme.spacing(2),
+    paddingRight: theme.spacing(1),
+    fontWeight: theme.typography.fontWeightMedium,
+    "$expanded > &": {
+      fontWeight: theme.typography.fontWeightRegular,
+    },
+  },
+  group: {
+    marginLeft: 0,
+    "& $content": {
+      paddingLeft: theme.spacing(2),
+    },
+  },
+  expanded: {},
+  selected: {},
+  label: {
+    fontWeight: "inherit",
+    color: "inherit",
+  },
+  labelRoot: {
+    display: "flex",
+    alignItems: "center",
+    padding: theme.spacing(0.5, 0),
+  },
+  labelIcon: {
+    marginRight: theme.spacing(1),
+  },
+  labelText: {
+    fontWeight: "inherit",
+    flexGrow: 1,
+  },
+}));

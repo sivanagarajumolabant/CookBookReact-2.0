@@ -219,68 +219,41 @@ export default function CreateFeature(props) {
     ITEMlIST, lable, admin, project_version
   } = useSelector((state) => state.dashboardReducer);
 
-  var obj_type = props.location?.state?.data?.Label;
-  // console.log("obj type ", obj_type);
-  // if (obj_type === "Indexes") {
-  //   obj_type = obj_type?.slice(0, -2);
-  // } else {
-  //   obj_type = obj_type?.slice(0, -1);
-  // }
-  // console.log("obj 1 ", obj_type);
+  let obj_type = props.location?.data?.obj;
+  let obj_type_id = props.location?.data?.obj_id;
+ 
   const [prerunval, setPrerunval] = useState([]);
-  // console.log(edithandle)
-  // const [featureslist, setFeatureslist] = useState(["ex1", "Sample"])
+  
   const history = useHistory();
 
   const [formValues, setformvalues] = useState({
-    Migration_TypeId: props.location?.state?.data?.type,
-    Object_Type: props.location?.state?.data?.Label,
+    // Migration_Name: props.location?.state?.data?.type,
+    // Object_Type: props.location?.state?.data?.Label,
 
   });
-  const [file, setfile] = useState([]);
-  // const [AttachmentList, setAttachmentList] = useState({})
-  // const { headerValue } = useSelector(state => state.dashboardReducer);
-
-  const [drop, setDrop] = useState("Source Attachments");
+  
   const [notify, setNotify] = useState({
     isOpen: false,
     message: "",
     type: "",
   });
-  const [createdata, setCreatedata] = useState([]);
-  const [fnlist, setFnlist] = useState([]);
+  
   const [tableinfo, setTableinfo] = useState([]);
   const [istdata, setIstdata] = useState(false);
-  // const [featurenamemsg, setFeaturenamemsg] = useState();
-  const [fid, setFid] = useState()
+  
   const [modalupdate, setModalupdate] = useState(false)
-  // const [migtypeid, setMigtypeid] = useState()
-
-  // const [seq, setSeq]=useState({})
-  // let sval = 0;
-  // if (headerValue) {
-  //   if (headerValue?.title === "Oracle TO Postgres") {
-  //     sval = 1;
-  //   } else if (headerValue?.title === "SQLServer TO Postgres") {
-  //     sval = 2;
-  //   } else if (headerValue?.title === "MYSQL TO Postgres") {
-  //     sval = 3;
-  //   }
-  // }
+ 
 
   useEffect(() => {
     let body = {
-      Object_Type: lable,
-      Migration_TypeId: headerValue?.title,
-      "Project_Version_Id": project_version
-
+      Object_Id :obj_type_id
     };
     let conf = {
       headers: {
         Authorization: "Bearer " + config.ACCESS_TOKEN(),
       },
     };
-    axios.post(`${config.API_BASE_URL()}/api/predessors`, body, conf).then(
+    axios.post(`${config.API_BASE_URL()}/api/predecessor_list/`, body, conf).then(
       (res) => {
         //   console.log(res);
         setPrerunval(res.data);
@@ -295,13 +268,11 @@ export default function CreateFeature(props) {
         });
       }
     );
-  }, [obj_type, headerValue?.title, lable, project_version]);
+  }, [obj_type, headerValue?.Migration_Name, lable, project_version]);
 
   useEffect(() => {
     let body = {
-      Object_Type: lable,
-      Migration_TypeId: headerValue?.title,
-      "Project_Version_Id": project_version
+      Object_Id :obj_type_id
     };
     let conf = {
       headers: {
@@ -312,7 +283,7 @@ export default function CreateFeature(props) {
     Object.keys(body).forEach((key) => {
       form.append(key, body[key]);
     });
-    axios.post(`${config.API_BASE_URL()}/api/tablesdata/`, form, conf).then(
+    axios.post(`${config.API_BASE_URL()}/api/table_features_list/`, form, conf).then(
       (res) => {
         setTableinfo(res.data);
         setIstdata(true);
@@ -325,66 +296,26 @@ export default function CreateFeature(props) {
         });
       }
     );
-  }, [modalupdate, headerValue?.title, lable, project_version]);
+  }, [modalupdate, headerValue?.Migration_Name, obj_type_id, project_version]);
 
-  useEffect(() => { }, [formValues]);
-
-  // useEffect(() => {
-  //   let body = {
-  //     Object_Type: obj_type,
-  //     Migration_TypeId: formValues.Migration_TypeId,
-  //   };
-  //   let conf = {
-  //     headers: {
-  //       Authorization: "Bearer " + config.ACCESS_TOKEN(),
-  //     },
-  //   };
-  //   axios.post(`${config.API_BASE_URL()}/api/fnlist`, body, conf).then(
-  //     (res) => {
-  //       console.log("fn list", res.data);
-  //       setFnlist(res.data);
-  //     },
-  //     (error) => {
-  //       console.log(error);
-  //     }
-  //   );
-  // }, [formValues]);
+  
 
   const dispatach = useDispatch();
-  // console.log(props.location.state?.data?.type)
-
-  console.log(props.location?.state?.data);
+ 
+  // console.log(props.location?.state?.data);
 
   const handleSubmit = (e) => {
 
-
-    let typeval = details?.data?.type;
-    // console.log("type data ", details?.data)
-    // console.log("type ", typeval)
-    let val;
     e.preventDefault();
-    if (headerValue) {
-      // debugger
-      // if (headerValue?.title === "Oracle TO Postgres") {
-      //   val = 1;
-      // } else if (headerValue?.title === "SQLServer TO Postgres") {
-      //   val = 2;
-      // } else if (headerValue?.title === "MYSQL TO Postgres") {
-      //   val = 3;
-      // }
-    }
-
     let formData = {
       ...formValues,
-      Migration_TypeId: headerValue?.title, //props.headerValue?.code,
+      Migration_Name: headerValue?.Migration_Name,
       Object_Type: obj_type,
-      // 'Source_Attachment': source_att,
-      // "Conversion_Attachment": target_att,
-      // "Target_Attachment": conver_att
       Source_FeatureDescription: "",
       Source_Code: "",
       Conversion_Code: "",
       Target_FeatureDescription: "",
+      Object_Id:obj_type_id,
       Target_Expected_Output: "",
       Target_ActualCode: "",
       Project_Version_Id: project_version,
@@ -409,7 +340,7 @@ export default function CreateFeature(props) {
         type: "error",
       });
     } else {
-      axios.post(`${config.API_BASE_URL()}/api/fcreate`, form, conf).then(
+      axios.post(`${config.API_BASE_URL()}/api/featurecreate/`, form, conf).then(
         (res) => {
           if (res.data === 'Feature already present with this version.Kindly request access for it') {
             setNotify({
@@ -465,26 +396,7 @@ export default function CreateFeature(props) {
       ...formValues,
       [e.target.name]: e.target.value,
     });
-    // console.log("fn list", fnlist);
-    // if (e.target.name === "Feature_Name") {
-    //   if (fnlist.length > 0) {
-    //     // let fnvalue = fnlist.Feature_Name.substr(5)
-    //     for (var counter = 0; counter < fnlist.length; counter++) {
-    //       let val_mod = String(fnlist[counter].Feature_Name)
-    //       if (e.target.value === "") {
-    //         setFeaturenamemsg("Please Enter feature Name");
-    //         break;
-    //       } else if (val_mod === e.target.value) {
-    //         setFeaturenamemsg("Feature Already Exist!");
-    //         break;
-    //       } else if (val_mod !== e.target.value) {
-    //         setFeaturenamemsg("Feature Avaialable to Create");
-    //       }
-    //     }
-    //   } else {
-    //     setFeaturenamemsg("Feature Avaialable to Create");
-    //   }
-    // }
+    
   };
 
   const handleEditchangetext = (e) => {
@@ -530,32 +442,18 @@ export default function CreateFeature(props) {
   const handlechangedropdownlevel = (v) => {
     setformvalues({
       ...formValues,
-      Level: v?.title,
+      Level: v?.Migration_Name,
     });
   };
 
-  // const handledes = (data) => {
-  //   setformvalues({
-  //     ...formValues,
-  //     Source_FeatureDescription: data,
-  //   });
-  // };
-  // const handletarget = (data) => {
-  //   setformvalues({
-  //     ...formValues,
-  //     Target_FeatureDescription: data,
-  //   });
-  // };
-
   const handleEditmodal = (featuredata) => {
-    // console.log(featuredata)
+    console.log(featuredata, 'fdata')
 
     let formData = {
       ...formValues,
-      Migration_TypeId: featuredata.Migration_TypeId,
-      Object_Type: featuredata.Object_Type,
+      Migration_Name: featuredata.Migration_Name,
+      // Object_Type: featuredata.Object_Type,
       Feature_Name: String(featuredata.Feature_Name),
-      // Source_FeatureDescription, Target_FeatureDescription,
       "Sequence": featuredata.Sequence,
       "Source_FeatureDescription": featuredata.Source_FeatureDescription,
       "Target_FeatureDescription": featuredata.Target_FeatureDescription,
@@ -567,7 +465,8 @@ export default function CreateFeature(props) {
       "Feature_version_approval_status": 'In Progress',
       "Estimations": featuredata.Estimations,
       "Last_Modified_by":sessionStorage.getItem('uemail'),
-      "Last_Modified_at": moment(new Date()).format('YYYY-MM-DD')
+      "Last_Modified_at": moment(new Date()).format('YYYY-MM-DD'),
+      "Object_Id":obj_type_id
     }
     setEdithandle(formData)
     const form = new FormData();
@@ -581,7 +480,7 @@ export default function CreateFeature(props) {
         'Authorization': 'Bearer ' + config.ACCESS_TOKEN()
       }
     }
-    axios.put(`${config.API_BASE_URL()}/api/fupdate/${featuredata.Feature_Id}`, form, conf)
+    axios.put(`${config.API_BASE_URL()}/api/feature_update/${featuredata.Feature_Id}/`, form, conf)
       .then(res => {
         setNotify({
           isOpen: true,
@@ -604,39 +503,37 @@ export default function CreateFeature(props) {
     // setOpen(false);
   }
   const handleEditchange = (Feature_Name) => {
+    // console.log(Feature_Name, ' feat')
     setOpen(true);
-    // setFid(Feature_Id);
     let conf = {
       headers: {
         Authorization: "Bearer " + config.ACCESS_TOKEN(),
       },
     };
     let body = {
-      'User_Email': sessionStorage.getItem('uemail'),
-      "Migration_Type": headerValue?.title,
-      "Object_Type": lable,
-      "Project_Version_Id": project_version
+      Object_Id :obj_type_id
     }
     const form = new FormData();
     Object.keys(body).forEach((key) => {
       form.append(key, body[key]);
     });
     axios
-      .post(`${config.API_BASE_URL()}/api/fdetail/${Feature_Name}`, form, conf)
+      .post(`${config.API_BASE_URL()}/api/feature_detail/${Feature_Name}/`, form, conf)
       .then(
         (res) => {
-          Object.keys(res.data).forEach((val) => {
-            if (res.data[val]?.Max_Flag === 1) {
+          // Object.keys(res.data).forEach((val) => {
+            // if (res.data[val]?.Max_Flag === 1) {
               // setDetaildata(res.data[val].serializer);
               // setFnname(res.data[val]?.serializer?.Feature_Name)
               // setObjtype(res.data[val]?.serializer?.Object_Type)
               // setIsdata(true);
               // setCheckIsEdit(res.data[val]?.edit)
               // setLatest_flag(res.data[val].Latest_Flag)
-              setEdithandle(res.data[val]?.serializer)
+              // console.log(res.data, 'data')
+              setEdithandle(res.data[0])
               setOpen(true);
-            }
-          })
+            // }
+          // })
         },
         (error) => {
           setNotify({
@@ -649,7 +546,7 @@ export default function CreateFeature(props) {
 
   }
 
-  // console.log(tableinfo,"============table")
+  // console.log(edithandle,"============edithandle")
   return (
     <Box style={{ width: '97%', marginLeft: 13 }} className={classes.Createcontainer}>
       <Box py={4}>
@@ -671,7 +568,7 @@ export default function CreateFeature(props) {
             onChange={(e) => handleChange(e)}
             label="Migration Type"
             defaultValue="Default Value"
-            value={headerValue?.title}
+            value={headerValue?.Migration_Name}
             variant="outlined"
             required
             disabled
@@ -725,13 +622,13 @@ export default function CreateFeature(props) {
         </Grid>
 
         <Grid item xs={12} sm={3} md={3} xl={2}>
-          <Autocomplete
+          {/* <Autocomplete
             fullWidth
             id="grouped-demo"
             options={[{ title: "Programlevel" }, { title: "Statementlevel" }]}
             groupBy={""}
             // defaultValue={{ title: 'Programlevel' }}
-            getOptionLabel={(option) => option?.title}
+            getOptionLabel={(option) => option?.Migration_Name}
             name="Level"
             onChange={(e, v) => handlechangedropdownlevel(v)}
             renderInput={(params) => (
@@ -750,7 +647,7 @@ export default function CreateFeature(props) {
               shrink: true,
             }}
             required
-          />
+          /> */}
         </Grid>
         <Grid item xs={12} sm={3} md={3} xl={3}>
           <FormControl variant="outlined" className={classes.formControl}>
@@ -847,29 +744,7 @@ export default function CreateFeature(props) {
       </Grid>
 
       <Notification notify={notify} setNotify={setNotify} />
-      {/* <Box py={5}>
-
-                <Grid container direction='row ' justifyContent='center' spacing={2}>
-
-
-                    <Grid item>
-                        <Button
-                            type="submit"
-                            fullWidth
-                            variant="contained"
-                            color="primary"
-                            // className={classes.submit}
-                            onClick={handleSubmit}
-                            startIcon={<SaveIcon />}
-
-                        >
-                            Save
-                        </Button>
-                    </Grid>
-
-
-                </Grid>
-            </Box> */}
+     
 
       <Grid container xl={12} justifyContent="space-between" spacing={3}>
         <Grid item xl={12} xs={12} sm={12} md={12}>

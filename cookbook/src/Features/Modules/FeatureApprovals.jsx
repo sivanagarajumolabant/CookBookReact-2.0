@@ -169,9 +169,10 @@ export default function FeatureApprovals() {
         if (headerValue) {
             if (Object.keys(headerValue).length > 0) {
                 let body = {
-                    "Migration_TypeId": headerValue?.title,
+                    "Migration_Name": headerValue?.Migration_Name,
                     "Object_Type": lable,
-                    "Project_Version_Id": project_version
+                    // "Project_Version_Id": project_version
+                    User_Email:sessionStorage.getItem('uemail')
                 };
                 let conf = {
                     headers: {
@@ -182,7 +183,7 @@ export default function FeatureApprovals() {
                 Object.keys(body).forEach((key) => {
                     form.append(key, body[key]);
                 });
-                axios.post(`${config.API_BASE_URL()}/api/featureapprovalslist/`, form, conf).then(
+                axios.post(`${config.API_BASE_URL()}/api/feature_approvals_list/`, form, conf).then(
                     (res) => {
                         setApprovallist(res.data)
                     },
@@ -207,7 +208,7 @@ export default function FeatureApprovals() {
             status = 'Approved'
         }
         let body = {
-            "Migration_TypeId": item.Migration_TypeId,
+            "Migration_Name": item.Migration_Name,
             "Object_Type": item.Object_Type,
             "Project_Version_Id": item.Project_Version_Id,
             "Feature_Name": item.Feature_Name,
@@ -229,7 +230,7 @@ export default function FeatureApprovals() {
             form.append(key, body[key]);
         });
         let fupdatebody = {
-            Migration_TypeId: item?.Migration_TypeId,
+            Migration_Name: item?.Migration_Name,
             Object_Type: item.Object_Type,
             Feature_Name: item.Feature_Name,
             // Source_FeatureDescription, Target_FeatureDescription,
@@ -314,7 +315,7 @@ export default function FeatureApprovals() {
     }
 
     return (
-        <div className={classes.container}>
+        <div>
             <Box py={1} px={1}>
                 <Grid container direction='row' justifyContent='center'>
                     <Grid item>
@@ -361,7 +362,7 @@ export default function FeatureApprovals() {
                                                     <StyledTableCell item xl={6} align="center">
                                                         <div className={classes.texttablecell}>
 
-                                                            {item.Migration_TypeId}
+                                                            {item.Migration_Name}
 
                                                         </div>
                                                     </StyledTableCell>
@@ -410,7 +411,7 @@ export default function FeatureApprovals() {
 
 
 
-                                                    <StyledTableCell item align="center" xl={10} align="center">
+                                                    <StyledTableCell item xl={10} align="center">
                                                         {item.Feature_version_approval_status === "Awaiting Approval" ? (
                                                             <div className={classes.actions}>
                                                                 <Button

@@ -111,36 +111,33 @@ export default function EditFeature(props) {
     headerValue, admin, project_version
   } = useSelector((state) => state.dashboardReducer);
 
-  // console.log(props)
-  // console.log("editdataprops", editPreviewdetails?.data)
   const history = useHistory();
   const [editdata, seteditdata] = useState({
     detaildata: editPreviewdetails?.data,
   });
-  // const editdata = { detaildata: editPreviewdetails?.data }
-  // console.log("editdata", editdata)
+  
   const classes = useStyles();
   const classestable = useStylestable();
 
   const [formValues, setformvalues] = useState({
-    Migration_TypeId: editPreviewdetails?.data?.type,
+    Migration_Name: editPreviewdetails?.data?.type,
     Object_Type: editPreviewdetails?.data?.Label,
   });
   const [file, setfile] = useState([]);
-  // const [AttachmentList, setAttachmentList] = useState({})
+  
 
   const [notify, setNotify] = useState({
     isOpen: false,
     message: "",
     type: "",
   });
-  // const [notify, setNotify] = useState({ isOpen: false, message: '', type: '' })
+  
   const [confirmDialog, setConfirmDialog] = useState({
     isOpen: false,
     title: "",
     subTitle: "",
   });
-  // const [migtypeid,setMigtypeid] = useState()
+ 
   const [Source_FeatureDescription, setSource_FeatureDescription] =
     useState("");
   const [Sequence, setSequence] = useState("");
@@ -351,20 +348,20 @@ export default function EditFeature(props) {
 
     // var val = 0;
     // if (editdata.detaildata) {
-    //   if (editdata.detaildata.Migration_TypeId === "Oracle TO Postgres") {
+    //   if (editdata.detaildata.Migration_Name === "Oracle TO Postgres") {
     //     val = 1;
     //   } else if (
-    //     editdata.detaildata.Migration_TypeId === "SQLServer TO Postgres"
+    //     editdata.detaildata.Migration_Name === "SQLServer TO Postgres"
     //   ) {
     //     val = 2;
-    //   } else if (editdata.detaildata.Migration_TypeId === "MYSQL TO Postgres") {
+    //   } else if (editdata.detaildata.Migration_Name === "MYSQL TO Postgres") {
     //     val = 3;
     //   }
     // }
     let formData = {
       ...formValues,
-      Migration_TypeId: editdata.detaildata?.Migration_TypeId,
-      Object_Type: editdata.detaildata.Object_Type,
+      Migration_Name: editdata.detaildata?.Migration_Name,
+      // Object_Type: editdata.detaildata.Object_Type,
       Feature_Name: editdata.detaildata.Feature_Name,
       // Source_FeatureDescription, Target_FeatureDescription,
       Sequence: editdata.detaildata.Sequence,
@@ -378,7 +375,9 @@ export default function EditFeature(props) {
       "Keywords": keywords,
       "Estimations": estimation,
       "Last_Modified_by": sessionStorage.getItem('uemail'),
-      "Last_Modified_at": moment(new Date()).format('YYYY-MM-DD')
+      "Last_Modified_at": moment(new Date()).format('YYYY-MM-DD'),
+      "Object_Id":editdata.detaildata.Object_Id,
+      "Feature_Id": editdata.detaildata.Feature_Id
     };
     const form = new FormData();
     Object.keys(formData).forEach((key) => {
@@ -391,14 +390,14 @@ export default function EditFeature(props) {
     };
     axios
       .put(
-        `${config.API_BASE_URL()}/api/fupdate/${editdata.detaildata.Feature_Id
-        }`,
+        `${config.API_BASE_URL()}/api/feature_update/${editdata.detaildata.Feature_Id
+        }/`,
         form,
         conf
       )
       .then(
         (res) => {
-
+          // console.log(res.data)
           if (res.data === 'Request for approval already present.Please wait for admin to approve it') {
             console.log(res.data);
             setNotify({
@@ -461,14 +460,14 @@ export default function EditFeature(props) {
   };
 
   // if (editdata?.detaildata) {
-  //   if (editdata.detaildata.Migration_TypeId === "1") {
-  //     editdata.detaildata.Migration_TypeId = "Oracle TO Postgres";
+  //   if (editdata.detaildata.Migration_Name === "1") {
+  //     editdata.detaildata.Migration_Name = "Oracle TO Postgres";
   //     // setMigtypeid(1)
-  //   } else if (editdata.detaildata.Migration_TypeId === "2") {
-  //     editdata.detaildata.Migration_TypeId = "SQLServer TO Postgres";
+  //   } else if (editdata.detaildata.Migration_Name === "2") {
+  //     editdata.detaildata.Migration_Name = "SQLServer TO Postgres";
   //     // setMigtypeid(2)
-  //   } else if (editdata.detaildata.Migration_TypeId === "3") {
-  //     editdata.detaildata.Migration_TypeId = "MYSQL TO Postgres";
+  //   } else if (editdata.detaildata.Migration_Name === "3") {
+  //     editdata.detaildata.Migration_Name = "MYSQL TO Postgres";
   //     // setMigtypeid(3)
   //   }
   // }
@@ -476,7 +475,7 @@ export default function EditFeature(props) {
   const handleDownload = (att_Type, migtypeid, id, obj_type, att_name, fid) => {
     let body = {
       file_name: att_name,
-      migration_typeid: migtypeid,
+      Migration_Name: migtypeid,
       object_type: obj_type,
       AttachmentType: att_Type,
       id: id,
@@ -525,7 +524,7 @@ export default function EditFeature(props) {
       Feature_Id: editdata.detaildata.Feature_Id,
       AttachmentType: "Sourcecode",
       Feature_Name: editdata.detaildata.Feature_Name,
-      Migration_TypeId: editdata.detaildata.Migration_TypeId,
+      Migration_Name: editdata.detaildata.Migration_Name,
       Object_Type: editdata.detaildata.Object_Type,
       convcode: "r@rawstringstart'" + Conversion_Code + "'@rawstringend",
       "Project_Version_Id": editdata.detaildata.Project_Version_Id,
@@ -596,7 +595,7 @@ export default function EditFeature(props) {
         // "convcode": Conversion_Code,
         convcode: "r@rawstringstart'" + Conversion_Code + "'@rawstringend",
         featurename: wout_prefix,
-        migration_typeid: editdata.detaildata.Migration_TypeId,
+        Migration_Name: editdata.detaildata.Migration_Name,
         object_type: editdata.detaildata.Object_Type,
         Feature_Version_Id: editdata.detaildata.Feature_Version_Id,
         Project_Version_Id: editdata.detaildata.Project_Version_Id
@@ -641,13 +640,13 @@ export default function EditFeature(props) {
 
   const handleAttachment_delete = (
     AttachmentType,
-    Migration_TypeId,
+    Migration_Name,
     id,
     Object_Type,
     fname
   ) => {
     let formData = {
-      migration_typeid: Migration_TypeId,
+      Migration_Name: Migration_Name,
       object_type: Object_Type,
       file_name: fname,
       AttachmentType: AttachmentType,
@@ -801,7 +800,7 @@ export default function EditFeature(props) {
 
     let formData = {
       "Project_Version_Id": project_version,
-      "Migration_TypeId": editdata.detaildata.Migration_TypeId,
+      "Migration_Name": editdata.detaildata.Migration_Name,
       "Object_Type": editdata.detaildata.Object_Type,
     };
     const form = new FormData();
@@ -908,7 +907,7 @@ export default function EditFeature(props) {
 
     let formData = {
       ...formValues,
-      Migration_TypeId: editdata.detaildata?.Migration_TypeId,
+      Migration_Name: editdata.detaildata?.Migration_Name,
       Object_Type: editdata.detaildata.Object_Type,
       Feature_Name: editdata.detaildata.Feature_Name,
       // Source_FeatureDescription, Target_FeatureDescription,
@@ -956,7 +955,7 @@ export default function EditFeature(props) {
     // feature create 
     let formDatacreate = {
       ...formValues,
-      Migration_TypeId: editdata.detaildata?.Migration_TypeId,
+      Migration_Name: editdata.detaildata?.Migration_Name,
       Object_Type: editdata.detaildata.Object_Type,
       Feature_Name: editdata.detaildata.Feature_Name,
       // Source_FeatureDescription, Target_FeatureDescription,
@@ -1147,7 +1146,7 @@ export default function EditFeature(props) {
                 onChange={(e) => handleChange(e)}
                 // label="Migration Type"
                 // defaultValue="Default Value"
-                value={editdata?.detaildata?.Migration_TypeId}
+                value={editdata?.detaildata?.Migration_Name}
                 variant="outlined"
                 required
                 disabled
@@ -1636,7 +1635,7 @@ export default function EditFeature(props) {
                                       onClick={() =>
                                         handleAttachment_delete(
                                           "Sourcecode",
-                                          editdata.detaildata.Migration_TypeId,
+                                          editdata.detaildata.Migration_Name,
                                           row.sid,
                                           editdata.detaildata.Object_Type,
                                           row.filename
@@ -1649,7 +1648,7 @@ export default function EditFeature(props) {
                                       onClick={(e) =>
                                         handleDownload(
                                           "Sourcecode",
-                                          editdata.detaildata.Migration_TypeId,
+                                          editdata.detaildata.Migration_Name,
                                           row.sid,
                                           editdata.detaildata.Object_Type,
                                           row.filename,
@@ -1674,7 +1673,7 @@ export default function EditFeature(props) {
                                       onClick={() => {
                                         handleAttachment_delete(
                                           "Expectedconversion",
-                                          editdata.detaildata.Migration_TypeId,
+                                          editdata.detaildata.Migration_Name,
                                           row.etid,
                                           editdata.detaildata.Object_Type,
                                           row.filename
@@ -1687,7 +1686,7 @@ export default function EditFeature(props) {
                                       onClick={(e) =>
                                         handleDownload(
                                           "Expectedconversion",
-                                          editdata.detaildata.Migration_TypeId,
+                                          editdata.detaildata.Migration_Name,
                                           row.etid,
                                           editdata.detaildata.Object_Type,
                                           row.filename,
@@ -1712,7 +1711,7 @@ export default function EditFeature(props) {
                                       onClick={() => {
                                         handleAttachment_delete(
                                           "Actualtargetcode",
-                                          editdata.detaildata.Migration_TypeId,
+                                          editdata.detaildata.Migration_Name,
                                           row.atid,
                                           editdata.detaildata.Object_Type,
                                           row.filename
@@ -1725,7 +1724,7 @@ export default function EditFeature(props) {
                                       onClick={(e) =>
                                         handleDownload(
                                           "Actualtargetcode",
-                                          editdata.detaildata.Migration_TypeId,
+                                          editdata.detaildata.Migration_Name,
                                           row.atid,
                                           editdata.detaildata.Object_Type,
                                           row.filename,
@@ -1797,7 +1796,7 @@ export default function EditFeature(props) {
                                 onClick={() =>
                                   handleAttachment_delete(
                                     row.AttachmentType,
-                                    editdata.detaildata.Migration_TypeId,
+                                    editdata.detaildata.Migration_Name,
                                     row.id,
                                     editdata.detaildata.Object_Type,
                                     row.filename
@@ -1810,7 +1809,7 @@ export default function EditFeature(props) {
                                 onClick={(e) =>
                                   handleDownload(
                                     row.AttachmentType,
-                                    editdata.detaildata.Migration_TypeId,
+                                    editdata.detaildata.Migration_Name,
                                     row.id,
                                     editdata.detaildata.Object_Type,
                                     row.filename,
@@ -1875,7 +1874,7 @@ export default function EditFeature(props) {
                                 onClick={(e) =>
                                   handleAttachment_delete(
                                     row.AttachmentType,
-                                    editdata.detaildata.Migration_TypeId,
+                                    editdata.detaildata.Migration_Name,
                                     row.id,
                                     editdata.detaildata.Object_Type,
                                     row.filename
@@ -1888,7 +1887,7 @@ export default function EditFeature(props) {
                                 onClick={(e) =>
                                   handleDownload(
                                     row.AttachmentType,
-                                    editdata.detaildata.Migration_TypeId,
+                                    editdata.detaildata.Migration_Name,
                                     row.id,
                                     editdata.detaildata.Object_Type,
                                     row.filename,
@@ -1953,7 +1952,7 @@ export default function EditFeature(props) {
                                 onClick={(e) =>
                                   handleAttachment_delete(
                                     row.AttachmentType,
-                                    editdata.detaildata.Migration_TypeId,
+                                    editdata.detaildata.Migration_Name,
                                     row.id,
                                     editdata.detaildata.Object_Type,
                                     row.filename
@@ -1966,7 +1965,7 @@ export default function EditFeature(props) {
                                 onClick={(e) =>
                                   handleDownload(
                                     row.AttachmentType,
-                                    editdata.detaildata.Migration_TypeId,
+                                    editdata.detaildata.Migration_Name,
                                     row.id,
                                     editdata.detaildata.Object_Type,
                                     row.filename,

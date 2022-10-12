@@ -199,15 +199,15 @@ const project_reloadAction = (value) => {
 
 
 
-// const useradmin_check = (value) => {
-//    return dispatch => {
+const object_id_get = (value) => {
+   return dispatch => {
 
-//       dispatch({
-//          type: "USERADMIN",
-//          payload: value
-//       })
-//    }
-// }
+      dispatch({
+         type: "OBJECT_ID",
+         payload: value
+      })
+   }
+}
 
 
-export default { ActionMenu, dropdown, reloadAction, CreateFeature, Createremoved, EditPreviewFeature, PreviewFeature, selectedMenutlist ,UpdateMenutlist, DeleteMenutlist, getdropdownlist,admin,lableselect,project_version,getproj_header_dropdownlist,project_reloadAction,getparentdropdownlist}
+export default { ActionMenu, dropdown, reloadAction, CreateFeature, Createremoved, EditPreviewFeature, PreviewFeature, selectedMenutlist ,UpdateMenutlist, DeleteMenutlist, getdropdownlist,admin,lableselect,project_version,getproj_header_dropdownlist,project_reloadAction,getparentdropdownlist,object_id_get}

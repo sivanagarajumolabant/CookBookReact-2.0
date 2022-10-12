@@ -19,6 +19,7 @@ const initialState = {
   project_version: null,
   project_header_dropdown: [],
   proje_version_reload: false,
+  objectid:null
   // useradmin_check: null
 };
 
@@ -28,6 +29,11 @@ const dashboardReducer = (state = initialState, action) => {
       return {
         ...state,
         menuitem: action.payload,
+      };
+    case "OBJECT_ID":
+      return {
+        ...state,
+        objectid: action.payload,
       };
     case "SELECTED_DROPDOWN":
       return {
@@ -77,7 +83,7 @@ const dashboardReducer = (state = initialState, action) => {
         ...state,
         ITEMlIST: action.payload,
       };
-
+      
     
     case "DROP_DOWN_LIST":
       return {
